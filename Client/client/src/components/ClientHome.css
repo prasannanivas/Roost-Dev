@@ -1,0 +1,256 @@
+/* ClientHome.css */
+
+/* Container styling */
+.client-home-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+/* Titles */
+.client-home-title {
+  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.required-docs-title {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Table styling */
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.docs-table thead th {
+  text-align: left;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 8px;
+}
+
+.docs-table tbody td {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.doc-row:hover {
+  background: #fafafa;
+}
+
+/* Column classes */
+.doc-label {
+  width: 40%;
+}
+
+.doc-status {
+  width: 20%;
+}
+
+.doc-action {
+  width: 40%;
+}
+
+/* File input and label styles */
+.upload-label {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.upload-input {
+  margin: 0;
+  padding: 4px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Status indicators */
+.doc-submitted-status {
+  color: #ff9800;
+  /* orange-ish */
+  font-weight: 600;
+}
+
+.doc-completed-status {
+  color: green;
+  font-weight: 600;
+}
+
+/* ClientHome.css */
+
+/* Container styling */
+.client-home-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.client-home-title {
+  margin-bottom: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.required-docs-title {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Table styling */
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.docs-table thead th {
+  text-align: left;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 8px;
+}
+
+.docs-table tbody td {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.doc-row:hover {
+  background: #fafafa;
+}
+
+.doc-label {
+  width: 40%;
+}
+
+.doc-status {
+  width: 20%;
+}
+
+.doc-action {
+  width: 40%;
+}
+
+/* Button for "Add" */
+.add-btn {
+  padding: 6px 12px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background: #0056b3;
+}
+
+/* Status styling */
+.doc-submitted-status {
+  color: #ff9800;
+  /* orange-ish */
+  font-weight: 600;
+}
+
+.doc-completed-status {
+  color: green;
+  font-weight: 600;
+}
+
+/* MODAL styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  width: 400px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* "Upload" and "Cancel" buttons inside modal */
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.modal-btn.upload {
+  background: #28a745;
+  /* green */
+  color: #fff;
+}
+
+.modal-btn.cancel {
+  background: #ccc;
+  color: #333;
+}
+
+/* Sliding panel and close button */
+.client-name-link {
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 5px;
+}
+
+.profile-panel {
+  position: fixed;
+  top: 0;
+  left: -100vw;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+  overflow-y: scroll;
+}
+
+.profile-panel.open {
+  left: 0;
+}
+
+.close-profile {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.close-profile:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+}

@@ -1,0 +1,54 @@
+.realtor-login-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.realtor-login-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.realtor-login-input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.realtor-login-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.realtor-login-button:hover {
+  background-color: #357abd;
+}
+
+.realtor-login-footer {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.realtor-login-link {
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.realtor-login-link:hover {
+  text-decoration: underline;
+}
