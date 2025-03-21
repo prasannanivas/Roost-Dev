@@ -71,7 +71,7 @@ const ClientHome = () => {
 
       // Example endpoint; adjust to your actual route
       const response = await fetch(
-        `http://localhost:5000/documents/${clientId}/documents`,
+        `http://54.89.183.155:5000/documents/${clientId}/documents`,
         {
           method: "POST",
           body: formData,

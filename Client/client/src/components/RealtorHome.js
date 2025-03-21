@@ -39,7 +39,7 @@ const RealtorHome = () => {
       };
 
       const response = await fetch(
-        `http://localhost:5000/realtor/${realtor.id}/invite-client`,
+        `http://54.89.183.155:5000/realtor/${realtor.id}/invite-client`,
         {
           method: "POST",
           headers: {

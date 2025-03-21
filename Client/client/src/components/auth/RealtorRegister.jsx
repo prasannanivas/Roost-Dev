@@ -21,7 +21,7 @@ const RealtorRegister = () => {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/realtor/register", {
+      const res = await fetch("http://54.89.183.155:5000/realtor/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
