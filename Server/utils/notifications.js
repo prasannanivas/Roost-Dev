@@ -28,20 +28,7 @@ const sendEmailNotification = async (email, message) => {
   }
 };
 
-const sendSMSNotification = async (phone, message) => {
-  const accountSid = "AC1f3d70a1b4e9745dd22ec1bc484e72f0";
-  const authToken = "2dbaa292c00c77cd4e098643172d4f56";
-  const client = twilio(accountSid, authToken);
-  client.messages
-    .create({
-      to: phone,
-      from: "+12283384261",
-      body: message,
-    })
-    .then((message) => console.log(message.sid));
-};
-
-sendSMSNotification("+16478974085", "Hello from Roost!");
+const sendSMSNotification = async (phone, message) => {};
 
 exports.sendInviteNotification = async (
   realtor,
