@@ -11,6 +11,7 @@ const ClientRegister = () => {
     email: "",
     location: "",
     password: "",
+    confirmPassword: "",
   });
   const navigate = useNavigate();
 
@@ -21,7 +22,7 @@ const ClientRegister = () => {
       return;
     }
     try {
-      const res = await fetch("http://54.89.183.155:5000/client/register", {
+      const res = await fetch("http://54.89.183.155:5000/client/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -70,6 +71,14 @@ const ClientRegister = () => {
           className="client-register-input"
           onChange={(e) =>
             setFormData({ ...formData, password: e.target.value })
+          }
+        />
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          className="client-register-input"
+          onChange={(e) =>
+            setFormData({ ...formData, confirmPassword: e.target.value })
           }
         />
         <button type="submit" className="client-register-button">

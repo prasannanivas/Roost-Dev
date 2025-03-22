@@ -11,6 +11,7 @@ const RealtorRegister = () => {
     email: "",
     location: "",
     password: "",
+    confirmPassword: "",
   });
   const navigate = useNavigate();
 
@@ -21,7 +22,7 @@ const RealtorRegister = () => {
       return;
     }
     try {
-      const res = await fetch("http://54.89.183.155:5000/realtor/register", {
+      const res = await fetch("http://54.89.183.155:5000/realtor/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -70,6 +71,14 @@ const RealtorRegister = () => {
           className="realtor-register-input"
           onChange={(e) =>
             setFormData({ ...formData, password: e.target.value })
+          }
+        />
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          className="realtor-register-input"
+          onChange={(e) =>
+            setFormData({ ...formData, confirmPassword: e.target.value })
           }
         />
         <button type="submit" className="realtor-register-button">

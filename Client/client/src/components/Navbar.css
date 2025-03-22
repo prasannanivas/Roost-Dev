@@ -164,10 +164,21 @@
   .mobile-menu-btn {
     display: none;
   }
+
+  .mobile-menu {
+    display: none !important;
+  }
 }
 
 .mobile-menu {
+  display: block;
   padding: 1rem 0;
+  position: fixed;
+  top: 64px;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  overflow-y: scroll;
   border-top: 1px solid #e5e7eb;
   background-color: #ffffff;
   border-bottom-left-radius: 8px;

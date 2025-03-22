@@ -40,16 +40,15 @@ function Navbar() {
             </Link>
           </div>
 
-          {/* Auth Buttons with Dropdowns */}
+          {/* Auth Buttons (Desktop) */}
           <div className="auth-buttons">
             {auth ? (
-              <div className="dropdown">
-                <button onClick={logout} className="btn-secondary">
-                  Logout
-                </button>
-              </div>
+              <button onClick={logout} className="btn-secondary">
+                Logout
+              </button>
             ) : (
               <>
+                {/* Sign In Dropdown */}
                 <div className="dropdown">
                   <button
                     onClick={toggleSignInDropdown}
@@ -74,6 +73,7 @@ function Navbar() {
                   )}
                 </div>
 
+                {/* Sign Up Dropdown */}
                 <div className="dropdown">
                   <button
                     onClick={toggleSignUpDropdown}
@@ -101,7 +101,7 @@ function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu toggle */}
           <button
             className="mobile-menu-btn"
             onClick={() => setIsOpen(!isOpen)}
@@ -118,29 +118,68 @@ function Navbar() {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="mobile-menu">
-            <Link to="/" className="mobile-nav-item">
-              <span className="flex items-center">Home</span>
+            <Link
+              to="/"
+              className="mobile-nav-item"
+              onClick={() => setIsOpen(false)}
+            >
+              Home
             </Link>
 
-            <div className="mobile-dropdown-section">
-              <h3 className="mobile-section-title">Sign In Options</h3>
-              <Link to="/realtor-login" className="mobile-nav-item">
-                Realtor Sign In
-              </Link>
-              <Link to="/client-login" className="mobile-nav-item">
-                Client Sign In
-              </Link>
-            </div>
+            {auth ? (
+              // When logged in, show Logout
+              <div className="mobile-dropdown-section">
+                <h3 className="mobile-section-title">My Account</h3>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsOpen(false);
+                  }}
+                  className="mobile-nav-item"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              // When not logged in, show Sign In / Sign Up
+              <>
+                <div className="mobile-dropdown-section">
+                  <h3 className="mobile-section-title">Sign In Options</h3>
+                  <Link
+                    to="/realtor-login"
+                    className="mobile-nav-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Realtor Sign In
+                  </Link>
+                  <Link
+                    to="/client-login"
+                    className="mobile-nav-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Client Sign In
+                  </Link>
+                </div>
 
-            <div className="mobile-dropdown-section">
-              <h3 className="mobile-section-title">Sign Up Options</h3>
-              <Link to="/realtor-register" className="mobile-nav-item">
-                Realtor Sign Up
-              </Link>
-              <Link to="/client-register" className="mobile-nav-item">
-                Client Sign Up
-              </Link>
-            </div>
+                <div className="mobile-dropdown-section">
+                  <h3 className="mobile-section-title">Sign Up Options</h3>
+                  <Link
+                    to="/realtor-register"
+                    className="mobile-nav-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Realtor Sign Up
+                  </Link>
+                  <Link
+                    to="/client-register"
+                    className="mobile-nav-item"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Client Sign Up
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
