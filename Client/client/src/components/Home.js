@@ -19,10 +19,12 @@ const Home = () => {
     <ClientProvider>
       <ClientHome />
     </ClientProvider>
-  ) : (
+  ) : auth.realtor ? (
     <RealtorProvider>
       <RealtorHome />
     </RealtorProvider>
+  ) : (
+    <PublicHome />
   );
 };
 

@@ -21,8 +21,12 @@ const RealtorLogin = () => {
       });
       const data = await res.json();
       console.log(data);
-      login(data);
-      navigate("/");
+      if (data.realtor) {
+        login(data);
+        navigate("/");
+      } else {
+        throw new Error("Invalid login");
+      }
     } catch (error) {
       console.error("Login error:", error);
     }

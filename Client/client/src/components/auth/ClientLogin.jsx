@@ -20,8 +20,12 @@ const ClientLogin = () => {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      login(data);
-      navigate("/");
+      if (data.client) {
+        login(data);
+        navigate("/");
+      } else {
+        throw new Error("Invalid login");
+      }
     } catch (error) {
       console.error("Login error:", error);
     }
