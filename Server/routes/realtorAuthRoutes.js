@@ -16,6 +16,7 @@ const {
   updateProfilePicture,
   getProfilePicture,
   requestDocument,
+  getRequestedDocuments,
 } = require("../controllers/realtorAuthController");
 
 const uploadFolder = path.join(__dirname, "../tempUploads");
@@ -65,5 +66,7 @@ router.post(
 router.get("/profilepic/:realtorId", getProfilePicture);
 
 router.post("/requestdocument/:realtorId", requestDocument);
+
+router.post("/requesteddocument/:realtorId", getRequestedDocuments);
 
 module.exports = router;

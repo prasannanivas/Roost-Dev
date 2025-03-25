@@ -1,0 +1,381 @@
+.client-details {
+  padding: 16px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.client-header {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.client-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  background: #e2e8f0;
+  color: #4a5568;
+  margin-top: 8px;
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.documents-section,
+.review-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.25rem;
+  color: #2d3748;
+}
+
+.documents-list,
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.document-card,
+.review-card {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.document-info,
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.document-info h3,
+.review-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #4a5568;
+}
+
+.status-pill {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.submitted {
+  background: #e6fffa;
+  color: #047481;
+}
+
+.approved {
+  background: #e6ffe6;
+  color: #166534;
+}
+
+.rejected {
+  background: #ffe6e6;
+  color: #991b1b;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.approval-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-view {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-approve {
+  background: #059669;
+  color: white;
+}
+
+.btn-reject {
+  background: #dc2626;
+  color: white;
+}
+
+.empty-state {
+  text-align: center;
+  color: #64748b;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #e2e8f0;
+}
+
+@media (min-width: 768px) {
+  .client-details {
+    padding: 24px;
+    max-width: 1200px;
+  }
+
+  .approval-buttons {
+    flex-direction: row;
+  }
+
+  .btn {
+    width: auto;
+  }
+}
+
+.client-info-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.info-section,
+.documents-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.documents-list {
+  margin-top: 1rem;
+}
+
+.document-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.document-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.document-status.approved {
+  background-color: #e6ffe6;
+  color: #008000;
+}
+
+.document-status.submitted {
+  background-color: #fff3e6;
+  color: #ff8c00;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+}
+
+/* Document Review Section */
+.doc-review-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.doc-review-title {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.doc-table-responsive {
+  overflow-x: auto;
+  margin: 0 -24px;
+  padding: 0 24px;
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.doc-table-header th {
+  background: #f8fafc;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.doc-table-row {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.doc-table-row:last-child {
+  border-bottom: none;
+}
+
+.doc-table td {
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.doc-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.doc-status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.doc-status-badge.submitted {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.doc-status-badge.approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.doc-status-badge.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.doc-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.doc-btn-view {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.doc-btn-approve {
+  background: #22c55e;
+  color: white;
+}
+
+.doc-btn-reject {
+  background: #ef4444;
+  color: white;
+}
+
+.doc-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.doc-empty-state {
+  text-align: center;
+  color: #64748b;
+  padding: 32px 0;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .doc-table-responsive {
+    margin: 0;
+    padding: 0;
+  }
+
+  .doc-table thead {
+    display: none;
+  }
+
+  .doc-table,
+  .doc-table tbody,
+  .doc-table tr,
+  .doc-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .doc-table-row {
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+  }
+
+  .doc-table td {
+    padding: 8px 0;
+  }
+
+  .doc-table td:not(:last-child) {
+    border-bottom: none;
+  }
+
+  .doc-name {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  .doc-actions {
+    margin-top: 12px;
+  }
+
+  .doc-btn {
+    flex: 1;
+    text-align: center;
+  }
+}

@@ -1,0 +1,103 @@
+.request-document-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.request-document-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 500px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.request-document-title {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.request-document-field {
+  margin-bottom: 1.25rem;
+}
+
+.request-document-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.request-document-input,
+.request-document-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.request-document-input:focus,
+.request-document-textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+}
+
+.request-document-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: flex-end;
+}
+
+.request-document-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.request-document-button.cancel {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+}
+
+.request-document-button.submit {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+}
+
+.request-document-button.cancel:hover {
+  background-color: #cbd5e0;
+}
+
+.request-document-button.submit:hover {
+  background-color: #3182ce;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

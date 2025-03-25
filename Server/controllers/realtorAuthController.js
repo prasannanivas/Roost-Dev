@@ -426,3 +426,24 @@ exports.requestDocument = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 };
+
+exports.getRequestedDocuments = async (req, res) => {
+  try {
+    const { realtorId } = req.params;
+    const { clientId } = req.body;
+
+    if (!clientId || !realtorId) {
+      return res.status(400).json({
+        error: "Invalid request - Both clientId and realtorId are required",
+      });
+    }
+
+    const requests = await DocumentRequest.find({
+      realtor: realtorId,
+      client: clientId,
+    });
+    return res.status(200).json(requests);
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};

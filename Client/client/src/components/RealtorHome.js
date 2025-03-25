@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useRealtor } from "../context/RealtorContext";
+import { useNavigate } from "react-router-dom";
 import "./RealtorHome.css";
 import RealtorProfile from "./RealtorProfile";
 import RealtorRewards from "./RealtorRewards";
@@ -20,8 +21,10 @@ const RealtorHome = () => {
     phone: "",
     email: "",
   });
+
   const [showRewards, setShowRewards] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const navigate = useNavigate();
 
   console.log(realtorFromContext);
 
@@ -39,7 +42,7 @@ const RealtorHome = () => {
       };
 
       const response = await fetch(
-        `http://54.89.183.155:5000/realtor/${realtor.id}/invite-client`,
+        `http://localhost:5000/realtor/${realtor.id}/invite-client`,
         {
           method: "POST",
           headers: {
@@ -93,6 +96,14 @@ const RealtorHome = () => {
       .join("")
       .toUpperCase();
   };
+
+  const handleClientClick = (clientId) => {
+    if (clientId) {
+      navigate(`/client/${clientId}`);
+    }
+  };
+
+  console.log(invited);
 
   return (
     <div className="realtor-home">
@@ -218,7 +229,12 @@ const RealtorHome = () => {
 
           <div className="invited-clients">
             {invited.map((client) => (
-              <div key={client._id} className="client-card">
+              <div
+                key={client._id}
+                className="client-card"
+                onClick={() => handleClientClick(client.inviteeId)}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="initials-circle">
                   {getInitials(client.referenceName)}
                 </div>

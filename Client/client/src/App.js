@@ -8,6 +8,8 @@ import ClientRegister from "./components/auth/ClientRegister";
 import Home from "./components/Home";
 import { AuthProvider } from "./context/AuthContext";
 import { ClientProvider } from "./context/ClientContext";
+import ClientDetails from "./components/ClientDetails";
+import { RealtorProvider } from "./context/RealtorContext";
 
 function App() {
   return (
@@ -21,6 +23,14 @@ function App() {
             <Route path="/client-login" element={<ClientLogin />} />
             <Route path="/realtor-register" element={<RealtorRegister />} />
             <Route path="/client-register" element={<ClientRegister />} />
+            <Route
+              path="/client/:clientId"
+              element={
+                <RealtorProvider>
+                  <ClientDetails />
+                </RealtorProvider>
+              }
+            />
           </Routes>
         </div>
       </Router>

@@ -1,0 +1,154 @@
+.questionnaire-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.questionnaire-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group h3 {
+  color: #333;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+label {
+  font-weight: 500;
+  color: #555;
+}
+
+select {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #fff;
+}
+
+.submit-btn {
+  background-color: #2c3e50;
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: #34495e;
+}
+
+.client-questionnaire-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.client-questionnaire-title {
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.client-questionnaire-section {
+  margin-bottom: 2rem;
+}
+
+.client-questionnaire-section-title {
+  color: #34495e;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.client-questionnaire-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.client-questionnaire-button-group {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.client-questionnaire-option-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: white;
+  color: #2c3e50;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.client-questionnaire-option-btn:hover {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.client-questionnaire-option-btn.client-questionnaire-selected {
+  background-color: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+.client-questionnaire-submit-btn {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 2rem;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.client-questionnaire-submit-btn:hover {
+  background-color: #27ae60;
+}
+
+.client-questionnaire-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.client-questionnaire-nav-btn {
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.client-questionnaire-nav-btn:hover {
+  background-color: #e0e0e0;
+}

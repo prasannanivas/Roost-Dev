@@ -26,6 +26,12 @@ router.get("/:clientId", clientInfo);
 router.put("/:clientId", updateClientInfo);
 
 router.put("/questionaire/:clientId", updateClientQuestionaire);
+// This route now expects:
+// {
+//   applyingbehalf: 'just me' | 'me and someone else',
+//   employmentStatus: 'Employed at a company' | 'self employed',
+//   ownAnotherProperty: 'yes - with a mortgage' | 'Yes - All payed off' | 'No'
+// }
 
 router.post("/:clientId/updatepassword", updateClientPassword);
 
