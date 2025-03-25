@@ -4,46 +4,73 @@ import "./ClientHome.css"; // Our CSS
 import { useClient } from "../context/ClientContext";
 import ClientProfile from "./ClientProfile";
 
-const REQUIRED_DOC_TYPES = [
-  { label: "Letter of Employment", value: "letterOfEmployment" },
-  { label: "2023 T4", value: "T4_2023" },
-  { label: "2024 T4", value: "T4_2024" },
-  { label: "Most Recent Paystub", value: "paystub" },
-  { label: "2022 T1 General", value: "T1_2022" },
-  { label: "2023 T1 General", value: "T1_2023" },
-  { label: "Notice of Assessment", value: "noticeOfAssessment" },
-  { label: "Mortgage Statement", value: "mortgageStatement" },
-];
-
 const ClientHome = () => {
   const { auth } = useAuth();
   const documentFromClientContext = useClient();
   const [showProfile, setShowProfile] = useState(false);
 
-  //console.log(documentFromClientContext);
-
+  // Assuming client is stored in auth.client
   const clientFromContext = auth.client;
-  const [documents, setDocuments] = useState(
+  const clientId = clientFromContext.id;
+
+  // State for documents fetched from the API endpoint (what's needed/requested)
+  const [documentsFromApi, setDocumentsFromApi] = useState([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+
+  // State for client's uploaded documents (from context)
+  const [clientDocs, setClientDocs] = useState(
     documentFromClientContext.documents || []
   );
 
   useEffect(() => {
-    setDocuments(documentFromClientContext.documents || []);
+    setClientDocs(documentFromClientContext.documents || []);
   }, [documentFromClientContext.documents]);
 
-  // State for controlling the modal
+  // Fetch the needed documents for the client from the API
+  useEffect(() => {
+    if (clientId) {
+      setLoadingDocuments(true);
+      fetch(`http://localhost:5000/client/neededdocument/${clientId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          // Expecting data.documents_needed to be an array of document objects
+          setDocumentsFromApi(data.documents_needed || []);
+          setLoadingDocuments(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching needed documents:", err);
+          setLoadingDocuments(false);
+        });
+    }
+  }, [clientId]);
+
+  // Merge the API document list with the client's uploaded documents.
+  // For each API document, if a matching document exists in clientDocs,
+  // update its status (and possibly fileName or fileId) using lowercase for comparison.
+  const getMergedDocuments = () => {
+    return documentsFromApi.map((apiDoc) => {
+      // Use .toLowerCase() to compare document types
+      const clientDoc = clientDocs.find(
+        (doc) => doc.docType?.toLowerCase() === apiDoc.docType?.toLowerCase()
+      );
+      return clientDoc ? { ...apiDoc, ...clientDoc } : apiDoc;
+    });
+  };
+
+  const mergedDocuments = getMergedDocuments();
+
+  // Now split into two groups based on the "type" property from the API.
+  const docsNeeded = mergedDocuments.filter((doc) => doc.type === "Needed");
+  const docsRequested = mergedDocuments.filter(
+    (doc) => doc.type === "Requested"
+  );
+
+  // Modal state for file upload
   const [showModal, setShowModal] = useState(false);
   const [selectedDocType, setSelectedDocType] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
-  console.log(documents);
-  const clientId = clientFromContext.id;
-
-  // Finds an existing doc by docType
-  const getDocByType = (docType) =>
-    documents.find((doc) => doc.docType === docType);
-
-  // When user clicks "Add," we store which docType we want to upload
+  // When user clicks "Add," store which docType we want to upload
   const handleAdd = (docType) => {
     setSelectedDocType(docType);
     setSelectedFile(null);
@@ -69,7 +96,7 @@ const ClientHome = () => {
       formData.append("docType", selectedDocType);
       formData.append("pdfFile", selectedFile);
 
-      // Example endpoint; adjust to your actual route
+      // Example endpoint; adjust to your actual route if needed
       const response = await fetch(
         `http://54.89.183.155:5000/documents/${clientId}/documents`,
         {
@@ -85,12 +112,13 @@ const ClientHome = () => {
       }
 
       const data = await response.json();
-      // data.document => { docType, fileName, status, fileId }
+      // data.document => { docType, fileName, status, fileId } or similar
 
-      // Update local docs array
-      setDocuments((prevDocs) => {
+      // Update the clientDocs state with the newly uploaded document.
+      // Use lowercase for the comparison.
+      setClientDocs((prevDocs) => {
         const existingIndex = prevDocs.findIndex(
-          (d) => d.docType === selectedDocType
+          (d) => d.docType.toLowerCase() === selectedDocType.toLowerCase()
         );
         if (existingIndex === -1) {
           return [...prevDocs, data.document];
@@ -126,85 +154,114 @@ const ClientHome = () => {
         <ClientProfile />
       </div>
 
-      <h2 className="required-docs-title">Required Documents</h2>
-      {documentFromClientContext.loadingClient ? (
-        <>
-          <h1>Loading... please wait.</h1>
-        </>
+      {loadingDocuments ? (
+        <h1>Loading... please wait.</h1>
       ) : (
         <>
-          {" "}
-          <table className="docs-table">
-            <thead>
-              <tr>
-                <th>Document</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {REQUIRED_DOC_TYPES.map((docDef) => {
-                const existingDoc = getDocByType(docDef.value);
-                const status = existingDoc
-                  ? existingDoc.status
-                  : "Not Submitted";
-
-                return (
-                  <tr key={docDef.value} className="doc-row">
-                    <td className="doc-label">{docDef.label}</td>
-                    <td className="doc-status">{status}</td>
+          {/* Section for "What is needed" */}
+          <h2>What is needed</h2>
+          {docsNeeded.length > 0 ? (
+            <table className="docs-table">
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {docsNeeded.map((doc) => (
+                  <tr key={doc.docType} className="doc-row">
+                    <td className="doc-label">{doc.docType}</td>
+                    <td className="doc-status">{doc.status}</td>
                     <td className="doc-action">
-                      {(status === "Not Submitted" ||
-                        status === "Rejected") && (
+                      {(doc.status === "Pending" ||
+                        doc.status === "Rejected") && (
                         <button
                           className="add-btn"
-                          onClick={() => handleAdd(docDef.value)}
+                          onClick={() => handleAdd(doc.docType)}
                         >
                           Add
                         </button>
                       )}
-                      {status === "Submitted" && (
+                      {doc.status === "Submitted" && (
                         <span className="doc-submitted-status">Submitted</span>
                       )}
-                      {status === "Approved" && (
+                      {doc.status === "Approved" && (
                         <span className="doc-completed-status">Completed</span>
                       )}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {/* MODAL OVERLAY */}
-          {showModal && (
-            <div className="modal-overlay" onClick={closeModal}>
-              {/* Stop clicks from closing if they happen inside modal content */}
-              <div
-                className="modal-content"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h2>Upload Document</h2>
-                <p>
-                  You are uploading for: <strong>{selectedDocType}</strong>
-                </p>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                />
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No documents needed.</p>
+          )}
 
-                <div className="modal-actions">
-                  <button className="modal-btn upload" onClick={handleUpload}>
-                    Upload
-                  </button>
-                  <button className="modal-btn cancel" onClick={closeModal}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}{" "}
+          {/* Section for "What Realtor Needs" */}
+          <h2>What Realtor Needs</h2>
+          {docsRequested.length > 0 ? (
+            <table className="docs-table">
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {docsRequested.map((doc) => (
+                  <tr key={doc.docType} className="doc-row">
+                    <td className="doc-label">{doc.docType}</td>
+                    <td className="doc-status">{doc.status}</td>
+                    <td className="doc-action">
+                      {doc.status?.toLowerCase() === "pending" && (
+                        <button
+                          className="add-btn"
+                          onClick={() => handleAdd(doc.docType)}
+                        >
+                          Add
+                        </button>
+                      )}
+                      {doc.status?.toLowerCase() === "submitted" && (
+                        <span className="doc-submitted-status">Submitted</span> // Add a class for styling
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No documents requested.</p>
+          )}
         </>
+      )}
+
+      {/* Modal Overlay for Upload */}
+      {showModal && (
+        <div className="modal-overlay" onClick={closeModal}>
+          {/* Stop clicks from closing if they happen inside modal content */}
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Upload Document</h2>
+            <p>
+              You are uploading for: <strong>{selectedDocType}</strong>
+            </p>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setSelectedFile(e.target.files[0])}
+            />
+            <div className="modal-actions">
+              <button className="modal-btn upload" onClick={handleUpload}>
+                Upload
+              </button>
+              <button className="modal-btn cancel" onClick={closeModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

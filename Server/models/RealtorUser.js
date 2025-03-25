@@ -30,6 +30,11 @@ const realtorUserSchema = new mongoose.Schema(
       // Or just keep it as a "Mixed" type if needed
     },
 
+    profilePicture: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+
     invites: [
       {
         _id: false, // Prevents MongoDB from creating an automatic _id for each subdocument

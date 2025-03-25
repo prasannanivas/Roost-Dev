@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const ClientUser = require("../models/ClientUser");
 const { getGridFsBucket } = require("../config/gridfs");
+const DocumentRequest = require("../models/schemas/DocumentRequest");
 
 // We'll assume Multer is storing the file in memory or on disk,
 // but here we only need a readable stream to pipe into GridFS.
@@ -96,6 +97,21 @@ exports.uploadClientDocument = async (req, res) => {
 
         try {
           await client.save();
+
+          try {
+            const doc = await DocumentRequest.findOne({
+              client: clientId,
+              docType: docType,
+            });
+
+            console.log(doc);
+            if (doc) {
+              doc.status = "Submitted";
+              await doc.save();
+            }
+          } catch (err) {
+            console.error("Error saving client doc data:", err);
+          }
         } catch (err) {
           console.error("Error saving client doc data:", err);
 

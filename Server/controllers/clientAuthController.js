@@ -4,6 +4,7 @@ const RealtorUser = require("../models/RealtorUser");
 const Invite = require("../models/Invite");
 const { hashPassword, comparePassword } = require("../utils/hash");
 const jwt = require("jsonwebtoken");
+const DocumentRequest = require("../models/schemas/DocumentRequest");
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -163,6 +164,11 @@ exports.clientInfo = async (req, res) => {
       email: client.email,
       location: client.location,
       address: client.address,
+      documents: client.documents,
+      brokerageInfo: client.brokerageInfo,
+      employmentStatus: client.employmentStatus,
+      applyingbehalf: client.applyingbehalf,
+      ownAnotherProperty: client.ownAnotherProperty,
     });
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -194,6 +200,45 @@ exports.updateClientInfo = async (req, res) => {
   }
 };
 
+exports.updateClientQuestionaire = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const { employmentStatus, applyingbehalf, ownAnotherProperty } = req.body;
+
+    if (
+      employmentStatus !== "Employed" &&
+      employmentStatus !== "Selfemployed" &&
+      employmentStatus !== "Unemployed"
+    ) {
+      return res.status(400).json({ error: "Invalid employment status" });
+    }
+    if (applyingbehalf !== "self" && applyingbehalf !== "other") {
+      return res.status(400).json({ error: "Invalid applyingbehalf" });
+    }
+    if (
+      ownAnotherProperty !== "Yes - with a mortgage" &&
+      ownAnotherProperty !== "Yes - All paid off" &&
+      ownAnotherProperty !== "No"
+    ) {
+      return res.status(400).json({ error: "Invalid ownAnotherProperty" });
+    }
+
+    const client = await ClientUser.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+    client.employmentStatus = employmentStatus || client.employmentStatus;
+    client.applyingbehalf = applyingbehalf || client.applyingbehalf;
+    client.ownAnotherProperty = ownAnotherProperty || client.ownAnotherProperty;
+    await client.save();
+    return res
+      .status(200)
+      .json({ message: "Client questionaire updated successfully" });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 exports.updateClientPassword = async (req, res) => {
   try {
     const { clientId } = req.params;
@@ -209,6 +254,97 @@ exports.updateClientPassword = async (req, res) => {
     client.passwordHash = await hashPassword(newPassword);
     await client.save();
     return res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+exports.neededDocument = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const client = await ClientUser.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+
+    if (
+      !client.employmentStatus ||
+      !client.applyingbehalf ||
+      !client.ownAnotherProperty
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Please complete the questionaire first" });
+    }
+
+    const realtorRequestedDocs = await DocumentRequest.find({
+      client: clientId,
+    });
+
+    const documents_needed = [];
+
+    realtorRequestedDocs.forEach((doc) => {
+      documents_needed.push({
+        docType: doc.docType,
+        status: doc.status,
+        type: "Requested",
+      });
+    });
+
+    if (client.employmentStatus === "Employed") {
+      documents_needed.push(
+        {
+          docType: "letterOfEmployment",
+          status: "Pending",
+          type: "Needed",
+        },
+        {
+          docType: "paystub",
+          status: "Pending",
+          type: "Needed",
+        },
+        {
+          docType: "T4_2023",
+          status: "Pending",
+          type: "Needed",
+        },
+        {
+          docType: "T4_2024",
+          status: "Pending",
+          type: "Needed",
+        }
+      );
+    } else if (client.employmentStatus === "Selfemployed") {
+      documents_needed.push(
+        {
+          docType: "2024_T1",
+          status: "Pending",
+          type: "Needed",
+        },
+        {
+          docType: "2023_T1",
+          status: "Pending",
+          type: "Needed",
+        },
+        {
+          docType: "Articles of Incorporation",
+          status: "Pending",
+          type: "Needed",
+        }
+      );
+    }
+
+    if (client.ownAnotherProperty === "Yes - with a mortgage") {
+      documents_needed.push({
+        docType: "Mortgage Statement",
+        status: "Pending",
+        type: "Needed",
+      });
+    }
+
+    return res.status(200).json({
+      documents_needed: documents_needed,
+    });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

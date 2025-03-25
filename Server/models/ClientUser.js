@@ -26,6 +26,9 @@ const clientUserSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     usedMortgagePartner: { type: Boolean, default: false },
     documents: [documentSubSchema],
+    employmentStatus: { type: String, default: "Employed" }, // "Employed" | "Self-employed" | "Unemployed"
+    applyingbehalf: { type: String, default: "Self" }, // "Self" | "other"
+    ownAnotherProperty: { type: String, default: "No" }, // "Yes - with a mortgage" | "Yes - All paid off" | "No"
   },
   { timestamps: true }
 );

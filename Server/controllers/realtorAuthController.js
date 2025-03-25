@@ -2,9 +2,12 @@
 const RealtorUser = require("../models/RealtorUser");
 const ClientUser = require("../models/ClientUser");
 const Invite = require("../models/Invite");
+const fs = require("fs");
 const { hashPassword, comparePassword } = require("../utils/hash");
 const { sendInviteNotification } = require("../utils/notifications.js");
+const { getGridFsBucket } = require("../config/gridfs.js"); // Adjust the path as needed
 const jwt = require("jsonwebtoken");
+const DocumentRequest = require("../models/schemas/DocumentRequest.js");
 
 // 1. Realtor Signup
 exports.realtorSignup = async (req, res) => {
@@ -289,6 +292,136 @@ exports.updateRealtorPassword = async (req, res) => {
     await realtor.save();
 
     return res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+exports.updateProfilePicture = async (req, res) => {
+  const realtorId = req.params.realtorId;
+
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
+  const bucket = getGridFsBucket();
+
+  // Create a read stream from the temporarily stored file
+  const readStream = fs.createReadStream(req.file.path);
+
+  // Open an upload stream to GridFS using the file's original name or a custom name
+  const uploadStream = bucket.openUploadStream(req.file.filename, {
+    contentType: req.file.mimetype,
+  });
+
+  // Pipe the file into GridFS
+  readStream
+    .pipe(uploadStream)
+    .on("error", (err) => {
+      console.error("Error uploading to GridFS:", err);
+      return res.status(500).json({
+        message: "Error uploading file to GridFS",
+        error: err.message,
+      });
+    })
+    .on("finish", async () => {
+      // The file is now stored in GridFS. Get its ObjectId from uploadStream.id.
+      const fileId = uploadStream.id;
+
+      try {
+        // Update the RealtorUser document with the GridFS file id
+        const realtor = await RealtorUser.findByIdAndUpdate(
+          realtorId,
+          { profilePicture: fileId },
+          { new: true }
+        );
+
+        if (!realtor) {
+          return res.status(404).json({
+            message: "Realtor not found or error updating profile picture",
+          });
+        }
+
+        // Optionally, delete the temporary file after successful upload
+        fs.unlink(req.file.path, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error("Error deleting temporary file:", unlinkErr);
+          }
+        });
+
+        res.json({ message: "Profile picture added successfully", realtor });
+      } catch (err) {
+        res.status(500).json({
+          message: "Error updating profile picture",
+          error: err.message,
+        });
+      }
+    });
+};
+
+exports.getProfilePicture = async (req, res) => {
+  const realtorId = req.params.realtorId;
+
+  try {
+    const realtor = await RealtorUser.findById(realtorId);
+    if (!realtor || !realtor.profilePicture) {
+      return res.status(404).json({ message: "Profile picture not found" });
+    }
+
+    const bucket = getGridFsBucket();
+    // Directly open a download stream using the stored ObjectId
+    const downloadStream = bucket.openDownloadStream(realtor.profilePicture);
+
+    downloadStream.on("file", (file) => {
+      // Optionally validate content type here
+      if (
+        file.contentType !== "image/jpeg" &&
+        file.contentType !== "image/png"
+      ) {
+        return res.status(400).json({ message: "File is not an image" });
+      }
+      res.set("Content-Type", file.contentType);
+    });
+
+    downloadStream.on("error", (err) => {
+      return res.status(404).json({
+        message: "Profile picture file not found",
+        error: err.message,
+      });
+    });
+
+    // Pipe the file stream directly to the response
+    downloadStream.pipe(res);
+  } catch (err) {
+    res.status(500).json({
+      message: "Error retrieving profile picture",
+      error: err.message,
+    });
+  }
+};
+
+exports.requestDocument = async (req, res) => {
+  try {
+    const { realtorId } = req.params;
+    const { clientId, docType } = req.body;
+    const realtor = await RealtorUser.findById(realtorId);
+    if (!realtor) {
+      return res.status(404).json({ error: "Realtor not found" });
+    }
+    const client = await ClientUser.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+    const newRequest = new DocumentRequest({
+      client: clientId,
+      realtor: realtorId,
+      docType,
+    });
+    await newRequest.save();
+    return res.status(201).json({
+      message: "Document request created successfully",
+      request: newRequest,
+    });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

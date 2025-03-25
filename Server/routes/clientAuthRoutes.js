@@ -8,6 +8,8 @@ const {
   clientInfo,
   updateClientInfo,
   updateClientPassword,
+  updateClientQuestionaire,
+  neededDocument,
 } = require("../controllers/clientAuthController");
 
 // POST /client/signup
@@ -23,6 +25,10 @@ router.get("/:clientId", clientInfo);
 
 router.put("/:clientId", updateClientInfo);
 
+router.put("/questionaire/:clientId", updateClientQuestionaire);
+
 router.post("/:clientId/updatepassword", updateClientPassword);
+
+router.get("/neededdocument/:clientId", neededDocument);
 
 module.exports = router;
