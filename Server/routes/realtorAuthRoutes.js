@@ -17,7 +17,9 @@ const {
   getProfilePicture,
   requestDocument,
   getRequestedDocuments,
+  inviteBulkClient,
 } = require("../controllers/realtorAuthController");
+const checkAndConvertFileFormat = require("../middleware/checkAndConvertFileToCSV");
 
 const uploadFolder = path.join(__dirname, "../tempUploads");
 if (!fs.existsSync(uploadFolder)) {
@@ -45,6 +47,13 @@ router.post("/login", realtorLogin);
 
 // POST /realtor/:realtorId/invite-client
 router.post("/:realtorId/invite-client", inviteClient);
+
+router.post(
+  "/:realtorId/invite-client-csv",
+  upload.single("file"), // multer middleware to handle file upload
+  checkAndConvertFileFormat, // middleware to validate/convert file
+  inviteBulkClient
+);
 
 // POST /realtor/:realtorId/invite-realtor
 router.post("/:realtorId/invite-realtor", inviteRealtor);

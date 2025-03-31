@@ -14,7 +14,7 @@ export const ClientProvider = ({ children }) => {
     setLoadingClient(true);
 
     async function fetchDocuments(clientID) {
-      await fetch(`http://localhost:5000/documents/${clientID}/documents`, {
+      await fetch(`http://54.89.183.155:5000/documents/${clientID}/documents`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export const ClientProvider = ({ children }) => {
     }
 
     async function fetchClient(clientID) {
-      await fetch(`http://localhost:5000/client/${clientID}`, {
+      await fetch(`http://54.89.183.155:5000/client/${clientID}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

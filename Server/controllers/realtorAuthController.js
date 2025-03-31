@@ -3,6 +3,7 @@ const RealtorUser = require("../models/RealtorUser");
 const ClientUser = require("../models/ClientUser");
 const Invite = require("../models/Invite");
 const fs = require("fs");
+const csv = require("csv-parser");
 const { hashPassword, comparePassword } = require("../utils/hash");
 const { sendInviteNotification } = require("../utils/notifications.js");
 const { getGridFsBucket } = require("../config/gridfs.js"); // Adjust the path as needed
@@ -165,6 +166,80 @@ exports.inviteClient = async (req, res) => {
       message: "Client invite created successfully",
       invite,
     });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
+exports.inviteBulkClient = async (req, res) => {
+  try {
+    const { realtorId } = req.params;
+    const realtor = await RealtorUser.findById(realtorId);
+    if (!realtor) {
+      return res.status(404).json({ error: "Realtor not found" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "CSV file is required" });
+    }
+
+    const results = [];
+    // Parse the CSV file
+    fs.createReadStream(req.file.path)
+      .pipe(csv())
+      .on("data", (data) => results.push(data))
+      .on("end", async () => {
+        const invites = [];
+        const errors = [];
+
+        // Process each row from the CSV file
+        for (const row of results) {
+          // Extract fields using the new header names
+          const fullName = row["Full Name"];
+          const email = row["email"];
+          const phone = row["phone"];
+
+          // Validate that all required fields are present
+          if (!fullName || !email || !phone) {
+            errors.push({ row, error: "Missing required fields" });
+            continue;
+          }
+
+          try {
+            // Create invite using the extracted values
+            const invite = await Invite.create({
+              inviterId: realtor._id,
+              inviteType: "client",
+              phone,
+              email,
+              status: "PENDING",
+            });
+
+            // Append invite to RealtorUser using fullName as the reference name
+            realtor.invites.push({
+              referenceName: fullName,
+              inviteId: invite._id,
+            });
+
+            // Send invite notification
+            await sendInviteNotification(realtor, email, phone, fullName);
+
+            invites.push(invite);
+          } catch (error) {
+            // If there's an error with this row, record the error along with the row data
+            errors.push({ row, error: error.message });
+          }
+        }
+
+        // Save the updated realtor with all new invites
+        await realtor.save();
+
+        return res.status(201).json({
+          message: "Bulk client invites created successfully",
+          invites,
+          errors,
+        });
+      });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }

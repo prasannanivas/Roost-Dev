@@ -6,6 +6,7 @@ import "./RealtorHome.css";
 import RealtorProfile from "./RealtorProfile";
 import RealtorRewards from "./RealtorRewards";
 import { FaGift, FaTimes } from "react-icons/fa";
+import CSVUploadForm from "./CSVuploadForm"; // Import the CSV upload component
 
 const RealtorHome = () => {
   const { auth } = useAuth();
@@ -13,6 +14,7 @@ const RealtorHome = () => {
   const realtorFromContext = useRealtor();
   const invited = realtorFromContext?.invitedClients || [];
   const [showForm, setShowForm] = useState(false);
+  const [showCSVUploadForm, setShowCSVUploadForm] = useState(false); // New state for CSV upload
   const [isEmail, setIsEmail] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState({ message: "", type: "" });
@@ -25,8 +27,6 @@ const RealtorHome = () => {
   const [showRewards, setShowRewards] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate();
-
-  console.log(realtorFromContext);
 
   const handleInviteClient = async (e) => {
     e.preventDefault();
@@ -42,7 +42,7 @@ const RealtorHome = () => {
       };
 
       const response = await fetch(
-        `http://localhost:5000/realtor/${realtor.id}/invite-client`,
+        `http://54.89.183.155:5000/realtor/${realtor.id}/invite-client`,
         {
           method: "POST",
           headers: {
@@ -91,7 +91,7 @@ const RealtorHome = () => {
 
   const getInitials = (name) => {
     return name
-      .split(" ")
+      ?.split(" ")
       .map((word) => word[0])
       .join("")
       .toUpperCase();
@@ -102,8 +102,6 @@ const RealtorHome = () => {
       navigate(`/client/${clientId}`);
     }
   };
-
-  console.log(invited);
 
   return (
     <div className="realtor-home">
@@ -146,11 +144,23 @@ const RealtorHome = () => {
         <div className="realtor-dashboard">
           <div className="dashboard-header">
             <h2>Invited Clients</h2>
-            <button className="invite-button" onClick={() => setShowForm(true)}>
-              Invite Client
-            </button>
+            <div className="button-group">
+              <button
+                className="invite-button"
+                onClick={() => setShowForm(true)}
+              >
+                Invite Client
+              </button>
+              <button
+                className="invite-button"
+                onClick={() => setShowCSVUploadForm(true)}
+              >
+                Bulk Invite via CSV
+              </button>
+            </div>
           </div>
 
+          {/* Single Invite Form */}
           {showForm && (
             <div className="invite-form-overlay">
               <form className="invite-form" onSubmit={handleInviteClient}>
@@ -225,6 +235,14 @@ const RealtorHome = () => {
                 </div>
               </form>
             </div>
+          )}
+
+          {/* Bulk CSV Upload Form */}
+          {showCSVUploadForm && (
+            <CSVUploadForm
+              realtorId={realtor.id}
+              setShowCSVUploadForm={setShowCSVUploadForm}
+            />
           )}
 
           <div className="invited-clients">

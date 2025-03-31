@@ -15,7 +15,7 @@ export const RealtorProvider = ({ children }) => {
     setLoadingRealtor(true);
 
     async function fetchRealtor(realtorID) {
-      await fetch(`http://localhost:5000/realtor/${realtorID}`, {
+      await fetch(`http://54.89.183.155:5000/realtor/${realtorID}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export const RealtorProvider = ({ children }) => {
     }
 
     async function getAllInvitedClients(realtorID) {
-      await fetch(`http://localhost:5000/realtor/invited/${realtorID}`, {
+      await fetch(`http://54.89.183.155:5000/realtor/invited/${realtorID}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

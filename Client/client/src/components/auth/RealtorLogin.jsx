@@ -14,7 +14,7 @@ const RealtorLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/realtor/login", {
+      const res = await fetch("http://54.89.183.155:5000/realtor/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

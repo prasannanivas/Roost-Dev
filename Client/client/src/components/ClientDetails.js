@@ -18,7 +18,9 @@ const ClientDetails = () => {
 
   const fetchClientDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/client/${clientId}`);
+      const response = await fetch(
+        `http://54.89.183.155:5000/client/${clientId}`
+      );
       if (response.ok) {
         const data = await response.json();
         setClient(data);
@@ -31,7 +33,7 @@ const ClientDetails = () => {
   const fetchRequestedDocuments = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/realtor/requesteddocument/${realtorId}`,
+        `http://54.89.183.155:5000/realtor/requesteddocument/${realtorId}`,
         {
           method: "POST",
           headers: {
@@ -63,7 +65,7 @@ const ClientDetails = () => {
   const handleRequestDocument = async ({ docType, description }) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/realtor/requestdocument/${realtorId}`,
+        `http://54.89.183.155:5000/realtor/requestdocument/${realtorId}`,
         {
           method: "POST",
           headers: {
@@ -90,7 +92,7 @@ const ClientDetails = () => {
     setIsProcessing(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/admin/documents/${clientId}/${docId}/review`,
+        `http://54.89.183.155:5000/admin/documents/${clientId}/${docId}/review`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -117,7 +119,7 @@ const ClientDetails = () => {
     console.log("viewing doc", doc);
     if (doc.fileId) {
       window.open(
-        `http://localhost:5000/documents/${clientId}/documents/${doc.fileId}`,
+        `http://54.89.183.155:5000/documents/${clientId}/documents/${doc.fileId}`,
         "_blank"
       );
     }

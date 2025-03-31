@@ -14,7 +14,7 @@ const AdminDashboard = () => {
   const fetchPendingDocuments = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/admin/documents/pending"
+        "http://54.89.183.155:5000/admin/documents/pending"
       );
       if (!response.ok) throw new Error("Failed to fetch");
       const data = await response.json();
@@ -29,7 +29,7 @@ const AdminDashboard = () => {
   const handleReview = async (clientId, docId, newStatus) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/admin/documents/${clientId}/${docId}/review`,
+        `http://54.89.183.155:5000/admin/documents/${clientId}/${docId}/review`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ const AdminDashboard = () => {
 
   // Function to open the document in a new tab
   const handleView = (clientId, docId) => {
-    const docUrl = `http://localhost:5000/documents/${clientId}/documents/${docId}`;
+    const docUrl = `http://54.89.183.155:5000/documents/${clientId}/documents/${docId}`;
     window.open(docUrl, "_blank"); // Opens the document in a new tab
   };
 

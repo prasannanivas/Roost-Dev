@@ -30,7 +30,7 @@ const ClientHome = () => {
   useEffect(() => {
     if (clientId) {
       setLoadingDocuments(true);
-      fetch(`http://localhost:5000/client/neededdocument/${clientId}`)
+      fetch(`http://54.89.183.155:5000/client/neededdocument/${clientId}`)
         .then((response) => response.json())
         .then((data) => {
           // Expecting data.documents_needed to be an array of document objects
@@ -98,7 +98,7 @@ const ClientHome = () => {
 
       // Example endpoint; adjust to your actual route if needed
       const response = await fetch(
-        `http://localhost:5000/documents/${clientId}/documents`,
+        `http://54.89.183.155:5000/documents/${clientId}/documents`,
         {
           method: "POST",
           body: formData,
@@ -216,7 +216,8 @@ const ClientHome = () => {
                     <td className="doc-label">{doc.docType}</td>
                     <td className="doc-status">{doc.status}</td>
                     <td className="doc-action">
-                      {doc.status?.toLowerCase() === "pending" && (
+                      {(doc.status?.toLowerCase() === "pending" ||
+                        doc.status?.toLowerCase() === "rejected") && (
                         <button
                           className="add-btn"
                           onClick={() => handleAdd(doc.docType)}

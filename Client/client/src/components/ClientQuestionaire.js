@@ -20,7 +20,7 @@ function ClientQuestionaire() {
     setIsLoading(true);
     try {
       await axios.put(
-        `http://localhost:5000/client/questionaire/${clientId}`,
+        `http://54.89.183.155:5000/client/questionaire/${clientId}`,
         formData
       );
       window.location.reload();
