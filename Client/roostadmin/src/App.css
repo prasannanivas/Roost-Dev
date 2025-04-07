@@ -1,7 +1,54 @@
-/* App.css */
-.App {
-  text-align: center;
+/* Layout */
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #12161c;
+  color: white;
+  padding: 24px;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  color: white;
+  text-align: left;
+  font-size: 16px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.menu-button.active {
+  background-color: #2e4f4f;
+  border-radius: 8px;
+}
+
+/* Main */
+.main-content {
+  flex: 1;
   background-color: #f5f5f5;
-  min-height: 100vh;
-  padding: 20px;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 32px;
 }

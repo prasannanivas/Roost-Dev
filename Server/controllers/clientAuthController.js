@@ -172,6 +172,7 @@ exports.clientInfo = async (req, res) => {
       employmentStatus: client.employmentStatus,
       applyingbehalf: client.applyingbehalf,
       ownAnotherProperty: client.ownAnotherProperty,
+      otherDetails: client.otherDetails,
     });
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -206,7 +207,12 @@ exports.updateClientInfo = async (req, res) => {
 exports.updateClientQuestionaire = async (req, res) => {
   try {
     const { clientId } = req.params;
-    const { employmentStatus, applyingbehalf, ownAnotherProperty } = req.body;
+    const {
+      employmentStatus,
+      applyingbehalf,
+      ownAnotherProperty,
+      otherDetails,
+    } = req.body;
 
     if (
       employmentStatus !== "Employed" &&
@@ -226,17 +232,73 @@ exports.updateClientQuestionaire = async (req, res) => {
       return res.status(400).json({ error: "Invalid ownAnotherProperty" });
     }
 
+    // Validate otherDetails if applying on behalf of someone else
+    if (applyingbehalf === "other") {
+      if (
+        !otherDetails ||
+        !otherDetails.name ||
+        !otherDetails.email ||
+        !otherDetails.phone ||
+        !otherDetails.relationship ||
+        !otherDetails.employmentStatus ||
+        !otherDetails.ownAnotherProperty
+      ) {
+        return res.status(400).json({
+          error:
+            "Other person's complete details including employment status and property ownership are required",
+        });
+      }
+
+      // Validate other person's employment status
+      if (
+        otherDetails.employmentStatus !== "Employed" &&
+        otherDetails.employmentStatus !== "Selfemployed" &&
+        otherDetails.employmentStatus !== "Unemployed"
+      ) {
+        return res
+          .status(400)
+          .json({ error: "Invalid employment status for other person" });
+      }
+
+      // Validate other person's property ownership
+      if (
+        otherDetails.ownAnotherProperty !== "Yes - with a mortgage" &&
+        otherDetails.ownAnotherProperty !== "Yes - All paid off" &&
+        otherDetails.ownAnotherProperty !== "No"
+      ) {
+        return res.status(400).json({
+          error: "Invalid property ownership status for other person",
+        });
+      }
+    }
+
     const client = await ClientUser.findById(clientId);
     if (!client) {
       return res.status(404).json({ error: "Client not found" });
     }
+
     client.employmentStatus = employmentStatus || client.employmentStatus;
     client.applyingbehalf = applyingbehalf || client.applyingbehalf;
     client.ownAnotherProperty = ownAnotherProperty || client.ownAnotherProperty;
+
+    // Update otherDetails if applying on behalf of someone else
+    if (applyingbehalf === "other") {
+      client.otherDetails = {
+        name: otherDetails.name,
+        email: otherDetails.email,
+        phone: otherDetails.phone,
+        relationship: otherDetails.relationship,
+        employmentStatus: otherDetails.employmentStatus,
+        ownAnotherProperty: otherDetails.ownAnotherProperty,
+      };
+    } else {
+      client.otherDetails = null; // Clear otherDetails if not applying for someone else
+    }
+
     await client.save();
     return res
       .status(200)
-      .json({ message: "Client questionaire updated successfully" });
+      .json({ message: "Client questionnaire updated successfully" });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -279,39 +341,29 @@ exports.neededDocument = async (req, res) => {
         .status(400)
         .json({ error: "Please complete the questionaire first" });
     }
-
-    const realtorRequestedDocs = await DocumentRequest.find({
-      client: clientId,
-    });
-
     const documents_needed = [];
-
-    realtorRequestedDocs.forEach((doc) => {
-      documents_needed.push({
-        docType: doc.docType,
-        status: doc.status,
-        type: "Requested",
-      });
-    });
-
     if (client.employmentStatus === "Employed") {
       documents_needed.push(
         {
+          displayName: "Letter of Employment " + client.name,
           docType: "letterOfEmployment",
           status: "Pending",
           type: "Needed",
         },
         {
+          displayName: "Paystub " + client.name,
           docType: "paystub",
           status: "Pending",
           type: "Needed",
         },
         {
+          displayName: "T4 2023 " + client.name,
           docType: "T4_2023",
           status: "Pending",
           type: "Needed",
         },
         {
+          displayName: "T4 2024 " + client.name,
           docType: "T4_2024",
           status: "Pending",
           type: "Needed",
@@ -320,16 +372,19 @@ exports.neededDocument = async (req, res) => {
     } else if (client.employmentStatus === "Selfemployed") {
       documents_needed.push(
         {
+          displayName: "2024 T1 " + client.name,
           docType: "2024_T1",
           status: "Pending",
           type: "Needed",
         },
         {
+          displayName: "2023 T1 " + client.name,
           docType: "2023_T1",
           status: "Pending",
           type: "Needed",
         },
         {
+          displayName: "Articles of Incorporation " + client.name,
           docType: "Articles of Incorporation",
           status: "Pending",
           type: "Needed",
@@ -339,10 +394,75 @@ exports.neededDocument = async (req, res) => {
 
     if (client.ownAnotherProperty === "Yes - with a mortgage") {
       documents_needed.push({
+        displayName: "Mortgage Statement " + client.name,
         docType: "Mortgage Statement",
         status: "Pending",
         type: "Needed",
       });
+    }
+
+    if (client.applyingbehalf === "other") {
+      if (client?.otherDetails?.employmentStatus === "Employed") {
+        documents_needed.push(
+          {
+            displayName: "Letter of Employment " + client?.otherDetails?.name,
+            docType: "letterOfEmployment_p1",
+            status: "Pending",
+            type: "Needed-other",
+          },
+          {
+            displayName: "Paystub " + client?.otherDetails?.name,
+            docType: "paystub_p1",
+            status: "Pending",
+            type: "Needed-other",
+          },
+          {
+            displayName: "T4 2023 " + client?.otherDetails?.name,
+            docType: "T4_2023_p1",
+            status: "Pending",
+            type: "Needed-other",
+          },
+          {
+            displayName: "T4 2024 " + client?.otherDetails?.name,
+            docType: "T4_2024_p1",
+            status: "Pending",
+            type: "Needed-other",
+          }
+        );
+      } else if (client?.otherDetails?.employmentStatus === "Selfemployed") {
+        documents_needed.push(
+          {
+            displayName: "2024 T1 " + client?.otherDetails?.name,
+            docType: "2024_T1_p1",
+            status: "Pending",
+            type: "Needed-other",
+          },
+          {
+            displayName: "2023 T1 " + client?.otherDetails?.name,
+            docType: "2023_T1_p1",
+            status: "Pending",
+            type: "Needed-other",
+          },
+          {
+            displayName:
+              "Articles of Incorporation " + client?.otherDetails?.name,
+            docType: "Articles of Incorporation_p1",
+            status: "Pending",
+            type: "Needed-other",
+          }
+        );
+      }
+
+      if (
+        client?.otherDetails?.ownAnotherProperty === "Yes - with a mortgage"
+      ) {
+        documents_needed.push({
+          displayName: "Mortgage Statement " + client?.otherDetails?.name,
+          docType: "Mortgage Statement_p1",
+          status: "Pending",
+          type: "Needed-other",
+        });
+      }
     }
 
     return res.status(200).json({

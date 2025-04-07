@@ -17,7 +17,7 @@ const Home = () => {
     if (auth?.client) {
       startTransition(() => {
         const getClientInfo = async () => {
-          await fetch(`http://54.89.183.155:5000/client/${auth.client.id}`)
+          await fetch(`http://localhost:5000/client/${auth.client.id}`)
             .then((response) => response.json())
             .then((data) => {
               setClientQuestionaire({

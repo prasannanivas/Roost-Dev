@@ -9,6 +9,7 @@ const { sendInviteNotification } = require("../utils/notifications.js");
 const { getGridFsBucket } = require("../config/gridfs.js"); // Adjust the path as needed
 const jwt = require("jsonwebtoken");
 const DocumentRequest = require("../models/schemas/DocumentRequest.js");
+const { RewardsClaims, Reward } = require("../models/Reward");
 
 // 1. Realtor Signup
 exports.realtorSignup = async (req, res) => {
@@ -53,11 +54,23 @@ exports.realtorSignup = async (req, res) => {
       $or: [{ phone }, { email }],
     });
     if (invite) {
+      // Mark invite as accepted
       invite.inviteeId = newRealtor._id;
       invite.status = "ACCEPTED";
       await invite.save();
 
-      // Optionally award points to the inviting realtor
+      // Award points to the realtor who invited
+      const realtor = await RealtorUser.findById(invite.inviterId);
+      if (realtor) {
+        // Suppose +5 points for a new client signup, or +1 as your logic dictates
+        const pointsToAdd = 2;
+        realtor.points += pointsToAdd;
+        realtor.pointsHistory.push({
+          points: pointsToAdd,
+          reason: "Realtor Signed Up via Invite" + newRealtor._id,
+        });
+        await realtor.save();
+      }
     }
 
     return res.status(201).json({
@@ -451,7 +464,10 @@ exports.getProfilePicture = async (req, res) => {
       // Optionally validate content type here
       if (
         file.contentType !== "image/jpeg" &&
-        file.contentType !== "image/png"
+        file.contentType !== "image/png" &&
+        file.contentType !== "image/webp" &&
+        file.contentType !== "image/heic" &&
+        file.contentType !== "image/heif"
       ) {
         return res.status(400).json({ message: "File is not an image" });
       }
@@ -475,50 +491,118 @@ exports.getProfilePicture = async (req, res) => {
   }
 };
 
-exports.requestDocument = async (req, res) => {
+// exports.requestDocument = async (req, res) => {
+//   try {
+//     const { realtorId } = req.params;
+//     const { clientId, docType } = req.body;
+//     const realtor = await RealtorUser.findById(realtorId);
+//     if (!realtor) {
+//       return res.status(404).json({ error: "Realtor not found" });
+//     }
+//     const client = await ClientUser.findById(clientId);
+//     if (!client) {
+//       return res.status(404).json({ error: "Client not found" });
+//     }
+//     const newRequest = new DocumentRequest({
+//       client: clientId,
+//       realtor: realtorId,
+//       docType,
+//     });
+//     await newRequest.save();
+//     return res.status(201).json({
+//       message: "Document request created successfully",
+//       request: newRequest,
+//     });
+//   } catch (error) {
+//     return res.status(400).json({ error: error.message });
+//   }
+// };
+
+// exports.getRequestedDocuments = async (req, res) => {
+//   try {
+//     const { realtorId } = req.params;
+//     const { clientId } = req.body;
+
+//     if (!clientId || !realtorId) {
+//       return res.status(400).json({
+//         error: "Invalid request - Both clientId and realtorId are required",
+//       });
+//     }
+
+//     const requests = await DocumentRequest.find({
+//       realtor: realtorId,
+//       client: clientId,
+//     });
+//     return res.status(200).json(requests);
+//   } catch (error) {
+//     return res.status(400).json({ error: error.message });
+//   }
+// };
+
+exports.claimRewards = async (req, res) => {
   try {
-    const { realtorId } = req.params;
-    const { clientId, docType } = req.body;
+    const { rewardId, realtorId, to, toAddress, clientId, targetRealtorId } =
+      req.body;
+
+    const claimData = {
+      rewardId,
+      realtorId,
+      to,
+      toAddress,
+      status: "PENDING",
+    };
+
     const realtor = await RealtorUser.findById(realtorId);
+    const reward = await Reward.findById(rewardId);
+
     if (!realtor) {
       return res.status(404).json({ error: "Realtor not found" });
     }
-    const client = await ClientUser.findById(clientId);
-    if (!client) {
-      return res.status(404).json({ error: "Client not found" });
+    if (!reward) {
+      return res.status(404).json({ error: "Reward not found" });
     }
-    const newRequest = new DocumentRequest({
-      client: clientId,
-      realtor: realtorId,
-      docType,
-    });
-    await newRequest.save();
-    return res.status(201).json({
-      message: "Document request created successfully",
-      request: newRequest,
-    });
-  } catch (error) {
-    return res.status(400).json({ error: error.message });
-  }
-};
 
-exports.getRequestedDocuments = async (req, res) => {
-  try {
-    const { realtorId } = req.params;
-    const { clientId } = req.body;
-
-    if (!clientId || !realtorId) {
+    if (realtor.points * 3.14 < reward.rewardAmount) {
       return res.status(400).json({
-        error: "Invalid request - Both clientId and realtorId are required",
+        message: `Realtor has only ${
+          realtor.points * 3.14
+        } Amount/s but this required ${reward.rewardAmount / 3.14} Amount/s`,
+        error: "Not enough points to claim this reward",
       });
     }
 
-    const requests = await DocumentRequest.find({
-      realtor: realtorId,
-      client: clientId,
+    // Add clientId or targetRealtorId based on 'to' type
+    if (to === "Client" && clientId) {
+      const client = await ClientUser.findById(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      claimData.clientId = clientId;
+    } else if (to === "Realtor" && targetRealtorId) {
+      const targetRealtor = await RealtorUser.findById(targetRealtorId);
+      if (!targetRealtor) {
+        return res.status(404).json({ error: "Target realtor not found" });
+      }
+      claimData.targetRealtorId = targetRealtorId;
+    }
+
+    try {
+      const newClaim = new RewardsClaims(claimData);
+      await newClaim.save();
+      reward.rewardClaimed += 1; // Increment the claimed count
+      await reward.save();
+    } catch (saveError) {
+      throw new Error("Failed to save claim or update reward");
+    }
+
+    res.status(200).json({
+      message: "Rewards claimed successfully",
+      claim: newClaim,
     });
-    return res.status(200).json(requests);
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    res.status(500).json({
+      message: "Error claiming reward",
+      error: error.message,
+    });
   }
 };

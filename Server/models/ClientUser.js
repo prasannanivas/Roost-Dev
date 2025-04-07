@@ -29,6 +29,14 @@ const clientUserSchema = new mongoose.Schema(
     employmentStatus: { type: String, default: "Employed" }, // "Employed" | "Self-employed" | "Unemployed"
     applyingbehalf: { type: String, default: "Self" }, // "Self" | "other"
     ownAnotherProperty: { type: String, default: "No" }, // "Yes - with a mortgage" | "Yes - All paid off" | "No"
+    otherDetails: {
+      name: { type: String },
+      email: { type: String },
+      phone: { type: String },
+      relationship: { type: String },
+      employmentStatus: { type: String },
+      ownAnotherProperty: { type: String },
+    },
   },
   { timestamps: true }
 );

@@ -15,9 +15,10 @@ const {
   updateRealtorPassword,
   updateProfilePicture,
   getProfilePicture,
-  requestDocument,
-  getRequestedDocuments,
+  //requestDocument,
+  //getRequestedDocuments,
   inviteBulkClient,
+  claimRewards,
 } = require("../controllers/realtorAuthController");
 const checkAndConvertFileFormat = require("../middleware/checkAndConvertFileToCSV");
 
@@ -74,8 +75,10 @@ router.post(
 
 router.get("/profilepic/:realtorId", getProfilePicture);
 
-router.post("/requestdocument/:realtorId", requestDocument);
+// router.post("/requestdocument/:realtorId", requestDocument);
 
-router.post("/requesteddocument/:realtorId", getRequestedDocuments);
+//router.post("/requesteddocument/:realtorId", getRequestedDocuments);
+
+router.post("/claimRewards", claimRewards);
 
 module.exports = router;

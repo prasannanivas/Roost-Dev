@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./RealtorRewards.css";
-import { FaStar, FaHistory, FaTrophy } from "react-icons/fa";
+import { FaStar, FaHistory, FaTrophy, FaTimes } from "react-icons/fa";
 
 /**
  * realtor = {
@@ -9,10 +9,14 @@ import { FaStar, FaHistory, FaTrophy } from "react-icons/fa";
  *     { points: Number, reason: String, date: Date },
  *     ...
  *   ]
- * }
  */
 
-const RealtorRewards = ({ realtor, invitedRealtors, getInitials }) => {
+const RealtorRewards = ({
+  realtor,
+  invitedRealtors,
+  getInitials,
+  invitedClients,
+}) => {
   const [showForm, setShowForm] = useState(false);
   const [isEmail, setIsEmail] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +26,37 @@ const RealtorRewards = ({ realtor, invitedRealtors, getInitials }) => {
     email: "",
     phone: "",
   });
+  const [rewards, setRewards] = useState([]);
+  const [selectedReward, setSelectedReward] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedClient, setSelectedClient] = useState("");
+  const [claimLoading, setClaimLoading] = useState(false);
+
+  const POINTS_TO_DOLLARS = 3.14;
+  const currentPoints = realtor?.points || 0;
+
+  const getRewardProgress = (rewardAmount) => {
+    const pointsNeeded = Math.ceil(rewardAmount / POINTS_TO_DOLLARS);
+    const progress = Math.min((currentPoints / pointsNeeded) * 100, 100);
+    return {
+      progress,
+      pointsNeeded,
+      isEligible: currentPoints >= pointsNeeded,
+    };
+  };
+
+  useEffect(() => {
+    const fetchRewards = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/admin/rewards");
+        const data = await response.json();
+        setRewards(data);
+      } catch (error) {
+        console.error("Error fetching rewards:", error);
+      }
+    };
+    fetchRewards();
+  }, []);
 
   const handleInviteRealtor = async (e) => {
     e.preventDefault();
@@ -37,7 +72,7 @@ const RealtorRewards = ({ realtor, invitedRealtors, getInitials }) => {
       };
 
       const response = await fetch(
-        `http://54.89.183.155:5000/realtor/${realtor._id}/invite-realtor`,
+        `http://localhost:5000/realtor/${realtor._id}/invite-realtor`,
         {
           method: "POST",
           headers: {
@@ -82,10 +117,91 @@ const RealtorRewards = ({ realtor, invitedRealtors, getInitials }) => {
     });
   };
 
+  const handleRewardClick = (reward) => {
+    setSelectedReward(reward);
+    setShowModal(true);
+    setSelectedClient("");
+  };
+
+  const handleClaimReward = async () => {
+    setClaimLoading(true);
+    try {
+      const payload = {
+        rewardId: selectedReward._id,
+        clientId: selectedClient || undefined,
+      };
+
+      const response = await fetch(
+        `http://localhost:5000/realtor/${realtor._id}/claim-reward`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (response.ok) {
+        // Refresh rewards and points
+        const fetchRewards = async () => {
+          try {
+            const response = await fetch("http://localhost:5000/admin/rewards");
+            const data = await response.json();
+            setRewards(data);
+          } catch (error) {
+            console.error("Error fetching rewards:", error);
+          }
+        };
+        fetchRewards();
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error("Error claiming reward:", error);
+    }
+    setClaimLoading(false);
+  };
+
+  const renderRewardCard = (reward) => (
+    <div
+      key={reward._id}
+      className="reward-card"
+      onClick={() => handleRewardClick(reward)}
+    >
+      {reward.imageUrl ? (
+        <img
+          src={`http://localhost:5000${reward.imageUrl}`}
+          alt={reward.rewardName}
+          className="reward-image"
+        />
+      ) : (
+        <div className="reward-initials">{getInitials(reward.rewardName)}</div>
+      )}
+      <h4>{reward.rewardName}</h4>
+      <p className="reward-amount">${reward.rewardAmount}</p>
+      {(() => {
+        const { progress, pointsNeeded, isEligible } = getRewardProgress(
+          reward.rewardAmount
+        );
+        return (
+          <div className="reward-progress">
+            <div className="progress-bar">
+              <div
+                className={`progress-bar-fill ${isEligible ? "eligible" : ""}`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="points-needed">
+              <span>
+                {currentPoints}/{pointsNeeded} points
+              </span>
+              {isEligible && <span className="eligible-tag">Eligible!</span>}
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+
   const totalPoints = realtor?.points || 0;
-  // Example progress: how close the user is to next reward
-  const rewardProgress = 70; // e.g., 70%
-  const rewardAmount = 100; // e.g., $100 reward
 
   return (
     <div className="rewards-wrapper">
@@ -107,6 +223,7 @@ const RealtorRewards = ({ realtor, invitedRealtors, getInitials }) => {
         <p className="points-description">
           Collect points and trade them in from vacations to cash
         </p>
+
         {/* Points Explanation (Card) */}
         <div className="points-explanation">
           <ul>
@@ -209,36 +326,34 @@ const RealtorRewards = ({ realtor, invitedRealtors, getInitials }) => {
             </form>
           </div>
         )}
-        {/* REWARDS Section
-        <div className="rewards-progress-section">
-          <h2 className="section-heading">Rewards</h2>
-          <div className="progress-info">
-            <span className="progress-text">
-              {rewardProgress}% – ${rewardAmount}
-            </span>
-            <div className="progress-bar">
-              <div
-                className="progress-bar-fill"
-                style={{ width: `${rewardProgress}%` }}
-              />
+
+        {/* Available Rewards Section */}
+        <div className="available-rewards-section">
+          <h2>Available Rewards</h2>
+
+          <div className="rewards-category">
+            <h3>Rewards for You</h3>
+            <div className="rewards-grid">
+              {rewards
+                .filter(
+                  (reward) =>
+                    reward.rewardFor === "Realtors" && reward.isVisible
+                )
+                .map((reward) => renderRewardCard(reward))}
             </div>
           </div>
-        </div> */}
 
-        {/* PREVIOUS REWARDS (Static Example)
-        <div className="previous-rewards-section">
-          <h3 className="section-subheading">Previous Rewards</h3>
-          <div className="previous-reward-item">
-            <span className="prev-reward-date">Sept 10 2023</span>
-            <span className="prev-reward-desc">$200 Cash – 220 Points</span>
+          <div className="rewards-category">
+            <h3>Rewards for Clients</h3>
+            <div className="rewards-grid">
+              {rewards
+                .filter(
+                  (reward) => reward.rewardFor === "Clients" && reward.isVisible
+                )
+                .map((reward) => renderRewardCard(reward))}
+            </div>
           </div>
-          <div className="previous-reward-item">
-            <span className="prev-reward-date">Aug 25 2023</span>
-            <span className="prev-reward-desc">
-              $100 Visa Card – 110 Points
-            </span>
-          </div>
-        </div> */}
+        </div>
 
         {/* POINTS HISTORY */}
         <div className="points-history">
@@ -285,6 +400,88 @@ const RealtorRewards = ({ realtor, invitedRealtors, getInitials }) => {
           ))}
         </div>
       </div>
+
+      {/* Reward Claim Modal */}
+      {showModal && selectedReward && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close" onClick={() => setShowModal(false)}>
+              <FaTimes />
+            </button>
+            <h2>{selectedReward.rewardName}</h2>
+            <div className="modal-reward-details">
+              <img
+                src={
+                  selectedReward.imageUrl
+                    ? `http://localhost:5000${selectedReward.imageUrl}`
+                    : null
+                }
+                alt={selectedReward.rewardName}
+                className="modal-reward-image"
+              />
+              <p className="modal-reward-amount">
+                ${selectedReward.rewardAmount}
+              </p>
+
+              <div className="points-verification">
+                <p>
+                  Required Points:{" "}
+                  {Math.ceil(selectedReward.rewardAmount / POINTS_TO_DOLLARS)}
+                </p>
+                <p>Your Points: {currentPoints}</p>
+              </div>
+
+              {selectedReward.rewardFor === "Clients" ? (
+                <div className="client-selection">
+                  <label>Select Client:</label>
+                  <select
+                    value={selectedClient}
+                    onChange={(e) => setSelectedClient(e.target.value)}
+                    required
+                  >
+                    <option value="">Choose a client</option>
+                    {invitedClients
+                      .filter((client) => client.status === "ACCEPTED")
+                      .map((client) => (
+                        <option key={client._id} value={client._id}>
+                          {client.referenceName}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              ) : selectedReward.rewardFor === "Realtors" ? (
+                <div className="client-selection">Claim</div>
+              ) : (
+                ""
+              )}
+
+              <button
+                className={`claim-button ${
+                  (selectedReward.rewardFor === "Clients" && !selectedClient) ||
+                  currentPoints * POINTS_TO_DOLLARS <
+                    selectedReward.rewardAmount
+                    ? "disabled"
+                    : ""
+                }`}
+                onClick={handleClaimReward}
+                disabled={
+                  claimLoading ||
+                  (selectedReward.rewardFor === "Clients" && !selectedClient) ||
+                  currentPoints * POINTS_TO_DOLLARS <
+                    selectedReward.rewardAmount
+                }
+              >
+                {claimLoading
+                  ? "Claiming..."
+                  : currentPoints * POINTS_TO_DOLLARS <
+                    selectedReward.rewardAmount
+                  ? "Insufficient Points"
+                  : "Claim Reward"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

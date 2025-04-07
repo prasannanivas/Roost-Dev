@@ -148,7 +148,7 @@ const CSVUploadForm = ({ realtorId, setShowCSVUploadForm }) => {
 
       try {
         const res = await axios.post(
-          `http://54.89.183.155:5000/realtor/${realtorId}/invite-client-csv`,
+          `http://localhost:5000/realtor/${realtorId}/invite-client-csv`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -216,7 +216,7 @@ const CSVUploadForm = ({ realtorId, setShowCSVUploadForm }) => {
           <p>
             Don't have a CSV template?{" "}
             <a
-              href="http://54.89.183.155:5000/download-template-client"
+              href="http://localhost:5000/download-template-client"
               target="_blank"
               rel="noopener noreferrer"
             >

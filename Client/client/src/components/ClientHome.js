@@ -6,12 +6,16 @@ import ClientProfile from "./ClientProfile";
 
 const ClientHome = () => {
   const { auth } = useAuth();
+
+  const { clientInfo } = useClient();
   const documentFromClientContext = useClient();
   const [showProfile, setShowProfile] = useState(false);
 
   // Assuming client is stored in auth.client
-  const clientFromContext = auth.client;
+  const clientFromContext = clientInfo || auth.client;
   const clientId = clientFromContext.id;
+
+  console.log(clientFromContext);
 
   // State for documents fetched from the API endpoint (what's needed/requested)
   const [documentsFromApi, setDocumentsFromApi] = useState([]);
@@ -30,7 +34,7 @@ const ClientHome = () => {
   useEffect(() => {
     if (clientId) {
       setLoadingDocuments(true);
-      fetch(`http://54.89.183.155:5000/client/neededdocument/${clientId}`)
+      fetch(`http://localhost:5000/client/neededdocument/${clientId}`)
         .then((response) => response.json())
         .then((data) => {
           // Expecting data.documents_needed to be an array of document objects
@@ -62,7 +66,7 @@ const ClientHome = () => {
   // Now split into two groups based on the "type" property from the API.
   const docsNeeded = mergedDocuments.filter((doc) => doc.type === "Needed");
   const docsRequested = mergedDocuments.filter(
-    (doc) => doc.type === "Requested"
+    (doc) => doc.type === "Needed-other"
   );
 
   // Modal state for file upload
@@ -98,7 +102,7 @@ const ClientHome = () => {
 
       // Example endpoint; adjust to your actual route if needed
       const response = await fetch(
-        `http://54.89.183.155:5000/documents/${clientId}/documents`,
+        `http://localhost:5000/documents/${clientId}/documents`,
         {
           method: "POST",
           body: formData,
@@ -159,7 +163,7 @@ const ClientHome = () => {
       ) : (
         <>
           {/* Section for "What is needed" */}
-          <h2>What is needed</h2>
+          <h2>What is needed for you</h2>
           {docsNeeded.length > 0 ? (
             <table className="docs-table">
               <thead>
@@ -172,7 +176,9 @@ const ClientHome = () => {
               <tbody>
                 {docsNeeded.map((doc) => (
                   <tr key={doc.docType} className="doc-row">
-                    <td className="doc-label">{doc.docType}</td>
+                    <td className="doc-label">
+                      {doc.displayName || doc.docType}
+                    </td>
                     <td className="doc-status">{doc.status}</td>
                     <td className="doc-action">
                       {(doc.status === "Pending" ||
@@ -200,7 +206,7 @@ const ClientHome = () => {
           )}
 
           {/* Section for "What Realtor Needs" */}
-          <h2>What Realtor Needs</h2>
+          <h2>What {clientFromContext?.otherDetails?.name} Needs</h2>
           {docsRequested.length > 0 ? (
             <table className="docs-table">
               <thead>
@@ -213,7 +219,9 @@ const ClientHome = () => {
               <tbody>
                 {docsRequested.map((doc) => (
                   <tr key={doc.docType} className="doc-row">
-                    <td className="doc-label">{doc.docType}</td>
+                    <td className="doc-label">
+                      {doc.displayName || doc.docType}
+                    </td>
                     <td className="doc-status">{doc.status}</td>
                     <td className="doc-action">
                       {(doc.status?.toLowerCase() === "pending" ||

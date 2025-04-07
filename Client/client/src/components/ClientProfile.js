@@ -75,7 +75,7 @@ function ClientProfile() {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `http://54.89.183.155:5000/client/${clientInfo.id}`,
+        `http://localhost:5000/client/${clientInfo.id}`,
         formData
       );
       if (response.status === 200) {
@@ -97,7 +97,7 @@ function ClientProfile() {
 
     try {
       const response = await axios.post(
-        `http://54.89.183.155:5000/client/${clientInfo.id}/updatepassword`,
+        `http://localhost:5000/client/${clientInfo.id}/updatepassword`,
         {
           oldPassword: passwordData.oldPassword,
           newPassword: passwordData.newPassword,

@@ -1,7 +1,28 @@
 // controllers/adminDocumentController.js
 
+const mongoose = require("mongoose");
+const { GridFSBucket } = require("mongodb");
+const { Readable } = require("stream");
 const ClientUser = require("../models/ClientUser");
+const { Reward } = require("../models/Reward");
 
+let bucket;
+const conn = mongoose.connection;
+conn.once("open", () => {
+  bucket = new GridFSBucket(conn.db, {
+    bucketName: "uploads",
+  });
+});
+
+exports.getAllClients = async (req, res) => {
+  try {
+    const clients = await ClientUser.find().lean();
+    return res.status(200).json({ clients });
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
 /**
  * GET /admin/documents/pending
  * Retrieves all documents with status="Submitted" across all clients
@@ -84,5 +105,172 @@ exports.reviewDocument = async (req, res) => {
   } catch (error) {
     console.error("Error reviewing document:", error);
     return res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.addNewReward = async (req, res) => {
+  console.log(req);
+  try {
+    const { rewardName, rewardAmount, rewardFor } = req.body;
+    const rewardData = {
+      rewardName,
+      rewardAmount,
+      rewardFor,
+      isVisible: true,
+    };
+
+    if (req.file) {
+      const readStream = Readable.from(req.file.buffer);
+      const uploadStream = bucket.openUploadStream(req.file.originalname, {
+        contentType: req.file.mimetype,
+      });
+
+      const fileId = uploadStream.id;
+
+      await new Promise((resolve, reject) => {
+        readStream.pipe(uploadStream).on("error", reject).on("finish", resolve);
+      });
+
+      rewardData.image = {
+        fileId: fileId,
+        filename: req.file.originalname,
+      };
+    }
+
+    const newReward = new Reward(rewardData);
+    await newReward.save();
+    return res
+      .status(201)
+      .json({ message: "Reward added successfully", reward: newReward });
+  } catch (error) {
+    console.error("Error adding reward:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getRewards = async (req, res) => {
+  try {
+    const rewards = await Reward.find().lean();
+
+    // Add image URLs to each reward
+    const rewardsWithImages = rewards.map((reward) => ({
+      ...reward,
+      imageUrl: reward.image
+        ? `/admin/api/images/${reward.image.fileId}`
+        : null,
+    }));
+
+    return res.status(200).json(rewardsWithImages);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.deleteReward = async (req, res) => {
+  try {
+    const { rewardId } = req.params;
+    const reward = await Reward.findById(rewardId);
+
+    // Delete image from GridFS if exists
+    if (reward.image?.fileId) {
+      await bucket.delete(new mongoose.Types.ObjectId(reward.image.fileId));
+    }
+
+    await Reward.findByIdAndDelete(rewardId);
+    return res.status(200).json({ message: "Reward deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.updateReward = async (req, res) => {
+  try {
+    const { rewardId } = req.params;
+    const updateData = {};
+
+    // Only add fields that are present in the request
+    if (req.body.rewardName !== undefined)
+      updateData.rewardName = req.body.rewardName;
+    if (req.body.rewardAmount !== undefined)
+      updateData.rewardAmount = req.body.rewardAmount;
+    if (req.body.rewardFor !== undefined)
+      updateData.rewardFor = req.body.rewardFor;
+    if (req.body.isVisible !== undefined)
+      updateData.isVisible = req.body.isVisible;
+
+    if (req.file) {
+      // Delete old file if exists
+      const oldReward = await Reward.findById(rewardId);
+      if (oldReward?.image?.fileId) {
+        await bucket.delete(
+          new mongoose.Types.ObjectId(oldReward.image.fileId)
+        );
+      }
+
+      const readStream = Readable.from(req.file.buffer);
+      const uploadStream = bucket.openUploadStream(req.file.originalname, {
+        contentType: req.file.mimetype,
+      });
+
+      const fileId = uploadStream.id;
+
+      await new Promise((resolve, reject) => {
+        readStream.pipe(uploadStream).on("error", reject).on("finish", resolve);
+      });
+
+      updateData.image = {
+        fileId: fileId,
+        filename: req.file.originalname,
+      };
+    }
+
+    const updatedReward = await Reward.findByIdAndUpdate(rewardId, updateData, {
+      new: true,
+    });
+    return res
+      .status(200)
+      .json({ message: "Reward updated successfully", reward: updatedReward });
+  } catch (error) {
+    console.error("Error updating reward:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.toggleRewardVisibility = async (req, res) => {
+  try {
+    const { rewardId } = req.params; // Get the reward ID from the request parameters
+    const reward = await Reward.findById(rewardId); // Find the reward by its ID
+    if (!reward) {
+      return res.status(404).json({ error: "Reward not found" });
+    }
+    reward.isVisible = !reward.isVisible; // Toggle the isVisible field
+    await reward.save(); // Save the updated reward
+    return res
+      .status(200)
+      .json({ message: "Reward visibility toggled successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getClaimedRewards = async (req, res) => {
+  try {
+    const rewards = await RewardsClaims.find();
+    return res.status(200).json(rewards); // Return the array of rewards
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+// Add a new endpoint to serve images
+exports.getImage = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    const downloadStream = bucket.openDownloadStream(
+      new mongoose.Types.ObjectId(fileId)
+    );
+    downloadStream.pipe(res);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };

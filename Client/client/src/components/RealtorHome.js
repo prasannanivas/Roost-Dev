@@ -42,7 +42,7 @@ const RealtorHome = () => {
       };
 
       const response = await fetch(
-        `http://54.89.183.155:5000/realtor/${realtor.id}/invite-client`,
+        `http://localhost:5000/realtor/${realtor.id}/invite-client`,
         {
           method: "POST",
           headers: {
@@ -120,6 +120,7 @@ const RealtorHome = () => {
           <FaTimes />
         </button>
         <RealtorRewards
+          invitedClients={invited}
           realtor={realtorFromContext.realtorInfo || {}}
           invitedRealtors={realtorFromContext.invitedRealtors || []}
           getInitials={getInitials}

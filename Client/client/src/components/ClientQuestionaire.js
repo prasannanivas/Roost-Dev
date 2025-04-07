@@ -12,6 +12,14 @@ function ClientQuestionaire() {
     applyingbehalf: "",
     employmentStatus: "",
     ownAnotherProperty: "",
+    otherDetails: {
+      name: "",
+      email: "",
+      phone: "",
+      relationship: "",
+      employmentStatus: "",
+      ownAnotherProperty: "",
+    },
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,7 +28,7 @@ function ClientQuestionaire() {
     setIsLoading(true);
     try {
       await axios.put(
-        `http://54.89.183.155:5000/client/questionaire/${clientId}`,
+        `http://localhost:5000/client/questionaire/${clientId}`,
         formData
       );
       window.location.reload();
@@ -36,6 +44,16 @@ function ClientQuestionaire() {
 
   const handleButtonSelect = (field, value) => {
     setFormData({ ...formData, [field]: value });
+  };
+
+  const handleOtherDetailsChange = (e) => {
+    setFormData({
+      ...formData,
+      otherDetails: {
+        ...formData.otherDetails,
+        [e.target.name]: e.target.value,
+      },
+    });
   };
 
   const nextStep = () => {
@@ -84,7 +102,51 @@ function ClientQuestionaire() {
           </div>
         );
       case 2:
-        return (
+        return formData.applyingbehalf === "other" ? (
+          <div className="client-questionnaire-section">
+            <h3 className="client-questionnaire-section-title">
+              Other Person's Details
+            </h3>
+            <div className="client-questionnaire-input-group">
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={formData.otherDetails.name}
+                onChange={handleOtherDetailsChange}
+                className="client-questionnaire-input"
+                required
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.otherDetails.email}
+                onChange={handleOtherDetailsChange}
+                className="client-questionnaire-input"
+                required
+              />
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number"
+                value={formData.otherDetails.phone}
+                onChange={handleOtherDetailsChange}
+                className="client-questionnaire-input"
+                required
+              />
+              <input
+                type="text"
+                name="relationship"
+                placeholder="Relationship"
+                value={formData.otherDetails.relationship}
+                onChange={handleOtherDetailsChange}
+                className="client-questionnaire-input"
+                required
+              />
+            </div>
+          </div>
+        ) : (
           <div className="client-questionnaire-section">
             <h3 className="client-questionnaire-section-title">
               Employment Information
@@ -139,53 +201,117 @@ function ClientQuestionaire() {
         return (
           <div className="client-questionnaire-section">
             <h3 className="client-questionnaire-section-title">
+              Employment Information
+            </h3>
+            <div className="client-questionnaire-subsection">
+              <label>Your Employment Status</label>
+              <div className="client-questionnaire-button-group">
+                {["Employed", "Selfemployed", "Unemployed"].map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    className={`client-questionnaire-option-btn ${
+                      formData.employmentStatus === status
+                        ? "client-questionnaire-selected"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      handleButtonSelect("employmentStatus", status)
+                    }
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {formData.applyingbehalf === "other" && (
+              <div className="client-questionnaire-subsection">
+                <label>{formData.otherDetails.name}'s Employment Status</label>
+                <div className="client-questionnaire-button-group">
+                  {["Employed", "Selfemployed", "Unemployed"].map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      className={`client-questionnaire-option-btn ${
+                        formData.otherDetails.employmentStatus === status
+                          ? "client-questionnaire-selected"
+                          : ""
+                      }`}
+                      onClick={() =>
+                        handleOtherDetailsChange({
+                          target: { name: "employmentStatus", value: status },
+                        })
+                      }
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      case 4:
+        return (
+          <div className="client-questionnaire-section">
+            <h3 className="client-questionnaire-section-title">
               Property Ownership
             </h3>
-            <label className="client-questionnaire-label">
-              Do you own another property?
-            </label>
-            <div className="client-questionnaire-button-group">
-              <button
-                type="button"
-                className={`client-questionnaire-option-btn ${
-                  formData.ownAnotherProperty === "Yes - with a mortgage"
-                    ? "client-questionnaire-selected"
-                    : ""
-                }`}
-                onClick={() =>
-                  handleButtonSelect(
-                    "ownAnotherProperty",
-                    "Yes - with a mortgage"
+            <div className="client-questionnaire-subsection">
+              <label>Do you own another property?</label>
+              <div className="client-questionnaire-button-group">
+                {["Yes - with a mortgage", "Yes - All paid off", "No"].map(
+                  (status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      className={`client-questionnaire-option-btn ${
+                        formData.ownAnotherProperty === status
+                          ? "client-questionnaire-selected"
+                          : ""
+                      }`}
+                      onClick={() =>
+                        handleButtonSelect("ownAnotherProperty", status)
+                      }
+                    >
+                      {status}
+                    </button>
                   )
-                }
-              >
-                Yes - with a mortgage
-              </button>
-              <button
-                type="button"
-                className={`client-questionnaire-option-btn ${
-                  formData.ownAnotherProperty === "Yes - All paid off"
-                    ? "client-questionnaire-selected"
-                    : ""
-                }`}
-                onClick={() =>
-                  handleButtonSelect("ownAnotherProperty", "Yes - All paid off")
-                }
-              >
-                Yes - All paid off
-              </button>
-              <button
-                type="button"
-                className={`client-questionnaire-option-btn ${
-                  formData.ownAnotherProperty === "No"
-                    ? "client-questionnaire-selected"
-                    : ""
-                }`}
-                onClick={() => handleButtonSelect("ownAnotherProperty", "No")}
-              >
-                No
-              </button>
+                )}
+              </div>
             </div>
+            {formData.applyingbehalf === "other" && (
+              <div className="client-questionnaire-subsection">
+                <label>
+                  Does {formData.otherDetails.name} own another property?
+                </label>
+                <div className="client-questionnaire-button-group">
+                  {["Yes - with a mortgage", "Yes - All paid off", "No"].map(
+                    (status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        className={`client-questionnaire-option-btn ${
+                          formData.otherDetails.ownAnotherProperty === status
+                            ? "client-questionnaire-selected"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          handleOtherDetailsChange({
+                            target: {
+                              name: "ownAnotherProperty",
+                              value: status,
+                            },
+                          })
+                        }
+                      >
+                        {status}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         );
       default:
@@ -210,7 +336,7 @@ function ClientQuestionaire() {
               Previous
             </button>
           )}
-          {currentStep < 3 && (
+          {currentStep < 4 && (
             <button
               type="button"
               onClick={nextStep}
@@ -219,7 +345,7 @@ function ClientQuestionaire() {
               Next
             </button>
           )}
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <button
               type="submit"
               className="client-questionnaire-submit-btn"

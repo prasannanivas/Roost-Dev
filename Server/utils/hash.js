@@ -11,3 +11,10 @@ async function comparePassword(plainText, hashed) {
 }
 
 module.exports = { hashPassword, comparePassword };
+
+// const findHash = async () => {
+//   const res = await hashPassword("secret"); // Example usage
+//   console.log(res); // Prints the hashed password
+// };
+
+// findHash();

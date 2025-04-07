@@ -55,7 +55,7 @@ const RealtorProfile = () => {
     e.preventDefault();
     try {
       const response = await fetch(
-        `http://54.89.183.155:5000/realtor/${realtor._id}`,
+        `http://localhost:5000/realtor/${realtor._id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -97,7 +97,7 @@ const RealtorProfile = () => {
 
     try {
       const response = await fetch(
-        `http://54.89.183.155:5000/realtor/${realtor._id}/updatepassword`,
+        `http://localhost:5000/realtor/${realtor._id}/updatepassword`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
