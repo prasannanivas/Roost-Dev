@@ -2,14 +2,13 @@
 const mongoose = require("mongoose");
 
 const documentRequestSchema = new mongoose.Schema({
+  displayName: {
+    type: String,
+  },
+
   client: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ClientUser",
-    required: true,
-  },
-  realtor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "RealtorUser",
     required: true,
   },
   docType: {
@@ -18,7 +17,12 @@ const documentRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "PENDING",
+    default: "Pending",
+  },
+  type: {
+    type: String,
+    enum: ["Needed", "Needed-other"],
+    default: "Needed",
   },
 });
 

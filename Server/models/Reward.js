@@ -55,6 +55,9 @@ const rewardsClaims = new mongoose.Schema({
   },
   status: { type: String, default: "PENDING" },
   claimedAt: { type: Date, default: Date.now },
+  rewardName: { type: String, required: true },
+  realtorName: { type: String, required: true },
+  deliveryDetails: { type: mongoose.Schema.Types.Mixed, default: {} },
 });
 
 const Reward = mongoose.model("Reward", rewardSchema);

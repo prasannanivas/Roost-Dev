@@ -199,6 +199,21 @@
   background-color: #ccc;
 }
 
+/* Request Document Button */
+.request-doc-button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.request-doc-button:hover {
+  background-color: #45a049;
+}
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -248,6 +263,21 @@
   border: 1px solid #ccc;
   border-radius: 6px;
   resize: vertical;
+}
+
+/* Modal Input */
+.modal-input {
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Modal Content */
+.modal-content {
+  margin: 20px 0;
 }
 
 /* Modal Actions */

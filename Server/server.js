@@ -36,6 +36,11 @@ app.get("/download-template-client", (req, res) => {
   });
 });
 
+// Ping endpoint
+app.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
 // Example Home
 app.get("/", (req, res) => {
   res.send("RealEstate Backend is running!");

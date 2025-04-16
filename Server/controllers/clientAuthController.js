@@ -5,6 +5,7 @@ const Invite = require("../models/Invite");
 const { hashPassword, comparePassword } = require("../utils/hash");
 const jwt = require("jsonwebtoken");
 const DocumentRequest = require("../models/schemas/DocumentRequest");
+const { createActivity } = require("./adminController");
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -62,6 +63,16 @@ exports.clientSignup = async (req, res) => {
     }
 
     const { accessToken, refreshToken } = generateTokens(newClient._id);
+
+    try {
+      await createActivity({
+        type: "New_Client",
+        client: newClient._id,
+        clientName: newClient.name,
+      });
+    } catch (error) {
+      console.error("Error creating activity:", error);
+    }
 
     return res.status(201).json({
       message: "Client signup successful",
@@ -465,8 +476,22 @@ exports.neededDocument = async (req, res) => {
       }
     }
 
+    const requestedDocuments = await DocumentRequest.find({
+      client: clientId,
+    });
+
+    console.log("Requested Documents:", requestedDocuments);
+    const requestedDocumentIds = requestedDocuments.map((doc) => {
+      return {
+        displayName: doc.displayName || doc.docType,
+        docType: doc.docType,
+        status: doc.status,
+        type: doc.type || "Needed",
+      };
+    });
+
     return res.status(200).json({
-      documents_needed: documents_needed,
+      documents_needed: documents_needed.concat(requestedDocumentIds),
     });
   } catch (error) {
     return res.status(400).json({ error: error.message });

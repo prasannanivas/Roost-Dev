@@ -11,8 +11,43 @@ const ClientsDashboard = () => {
   const [newStatus, setNewStatus] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [docFilter, setDocFilter] = useState("Active");
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [hasInternet, setHasInternet] = useState(true);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [newDocName, setNewDocName] = useState("");
+  const [newDisplayName, setNewDisplayName] = useState("");
+  const [isMainApplicant, setIsMainApplicant] = useState(true);
+
+  const checkInternetConnectivity = async () => {
+    try {
+      await axios.get("http://localhost:5000/ping", { timeout: 3000 });
+      setHasInternet(true);
+    } catch (error) {
+      setHasInternet(false);
+    }
+  };
 
   useEffect(() => {
+    checkInternetConnectivity();
+    const intervalId = setInterval(checkInternetConnectivity, 30000); // Check every 30 seconds
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!hasInternet) return;
     axios
       .get("http://localhost:5000/admin/clients")
       .then(async (response) => {
@@ -38,7 +73,7 @@ const ClientsDashboard = () => {
         setNeededDocsMap(map);
       })
       .catch((error) => console.error("Error fetching clients:", error));
-  }, []);
+  }, [hasInternet]);
 
   const getDocumentStatusColor = (status) => {
     switch (status) {
@@ -82,6 +117,34 @@ const ClientsDashboard = () => {
       .catch((err) => console.error("Error updating status:", err));
   };
 
+  const handleRequestDocument = (isMain) => {
+    setIsMainApplicant(isMain);
+    setNewDocName("");
+    setNewDisplayName("");
+    setShowRequestModal(true);
+  };
+
+  const handleSubmitRequest = async () => {
+    if (!selectedClient || !hasInternet || !newDocName || !newDisplayName) {
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:5000/admin/requestdocument", {
+        docType: newDocName,
+        clientId: selectedClient._id,
+        type: isMainApplicant ? "Needed" : "Needed-other",
+        displayName: newDisplayName,
+      });
+
+      const response = await axios.get("http://localhost:5000/admin/clients");
+      setClients(response.data.clients);
+      setShowRequestModal(false);
+    } catch (error) {
+      console.error("Error requesting document:", error);
+    }
+  };
+
   const getStatusText = (documents, neededDocuments) => {
     if (!neededDocuments || neededDocuments.length === 0) return "SIGNED UP";
     const neededTypes = neededDocuments.map((d) => d.docType.toLowerCase());
@@ -123,12 +186,28 @@ const ClientsDashboard = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="view-button"
+                  onClick={(e) => {
+                    if (!hasInternet) {
+                      e.preventDefault();
+                      alert(
+                        "No internet connection. Please try again when connected."
+                      );
+                    }
+                  }}
                 >
                   View
                 </a>
                 <button
                   className="status-button"
-                  onClick={() => handleChangeStatusClick(existing)}
+                  onClick={() => {
+                    if (!hasInternet) {
+                      alert(
+                        "No internet connection. Please try again when connected."
+                      );
+                      return;
+                    }
+                    handleChangeStatusClick(existing);
+                  }}
                 >
                   Change Status
                 </button>
@@ -136,7 +215,15 @@ const ClientsDashboard = () => {
             ) : (
               <button
                 className="status-button"
-                onClick={() => alert(`Reminder sent for ${needed.docType}!`)}
+                onClick={() => {
+                  if (!hasInternet) {
+                    alert(
+                      "No internet connection. Please try again when connected."
+                    );
+                    return;
+                  }
+                  alert(`Reminder sent for ${needed.docType}!`);
+                }}
               >
                 Remind
               </button>
@@ -150,6 +237,30 @@ const ClientsDashboard = () => {
   return (
     <>
       <div className="main-content">
+        {!hasInternet && (
+          <div
+            style={{
+              backgroundColor: "#ff4444",
+              color: "white",
+              padding: "10px",
+              textAlign: "center",
+            }}
+          >
+            No internet connection. Please check your connection and try again.
+          </div>
+        )}
+        {isOffline && (
+          <div
+            style={{
+              backgroundColor: "#ff9800",
+              color: "white",
+              padding: "10px",
+              textAlign: "center",
+            }}
+          >
+            You are currently offline. Some features may be unavailable.
+          </div>
+        )}
         <div className="content-wrapper">
           <div className="client-list">
             <h2 className="section-title">Clients</h2>
@@ -210,6 +321,12 @@ const ClientsDashboard = () => {
                     <>
                       <div className="applicant-section">
                         <h3>Main Applicant Documents</h3>
+                        <button
+                          className="request-doc-button"
+                          onClick={() => handleRequestDocument(true)}
+                        >
+                          Request Document
+                        </button>
                         {renderDocumentSection(
                           neededDocsMap[selectedClient._id]?.filter(
                             (doc) =>
@@ -234,6 +351,12 @@ const ClientsDashboard = () => {
                               "Other Applicant"}
                             's Documents
                           </h3>
+                          <button
+                            className="request-doc-button"
+                            onClick={() => handleRequestDocument(false)}
+                          >
+                            Request Document
+                          </button>
                           {renderDocumentSection(
                             neededDocsMap[selectedClient._id]?.filter(
                               (doc) =>
@@ -299,6 +422,51 @@ const ClientsDashboard = () => {
               </button>
               <button className="save-button" onClick={handleSubmitStatus}>
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showRequestModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <button
+              className="modal-close"
+              onClick={() => setShowRequestModal(false)}
+            >
+              ×
+            </button>
+            <h3 className="modal-title">Request New Document</h3>
+            <div className="modal-content">
+              <input
+                type="text"
+                placeholder="Document Name"
+                value={newDocName}
+                onChange={(e) => setNewDocName(e.target.value)}
+                className="modal-input"
+              />
+              <input
+                type="text"
+                placeholder="Display Name"
+                value={newDisplayName}
+                onChange={(e) => setNewDisplayName(e.target.value)}
+                className="modal-input"
+              />
+            </div>
+            <div className="modal-actions">
+              <button
+                className="cancel-button"
+                onClick={() => setShowRequestModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="save-button"
+                onClick={handleSubmitRequest}
+                disabled={!newDocName || !newDisplayName}
+              >
+                Submit Request
               </button>
             </div>
           </div>

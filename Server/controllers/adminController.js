@@ -4,7 +4,9 @@ const mongoose = require("mongoose");
 const { GridFSBucket } = require("mongodb");
 const { Readable } = require("stream");
 const ClientUser = require("../models/ClientUser");
-const { Reward } = require("../models/Reward");
+const { Reward, RewardsClaims } = require("../models/Reward");
+const DocumentRequest = require("../models/schemas/DocumentRequest");
+const Activity = require("../models/schemas/Activity");
 
 let bucket;
 const conn = mongoose.connection;
@@ -262,6 +264,52 @@ exports.getClaimedRewards = async (req, res) => {
   }
 };
 
+exports.updateClaimedRewards = async (req, res) => {
+  try {
+    const { rewardId } = req.params;
+    const { status, trackingId } = req.body;
+    const reward = await RewardsClaims.findById(rewardId);
+    if (!reward) {
+      return res.status(404).json({ error: "Reward not found" });
+    }
+    reward.status = status; // Update the status field
+    if (trackingId) {
+      reward.deliveryDetails.trackingId = trackingId; // Update the tracking number if provided
+    }
+
+    console.log("Updated reward:", reward); // Log the updated reward object
+    await reward.save(); // Save the updated reward
+    return res
+      .status(200)
+      .json({ message: "Reward status updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.requestDocument = async (req, res) => {
+  try {
+    const { clientId, docType, type, displayName } = req.body;
+    const client = await ClientUser.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+    const newRequest = new DocumentRequest({
+      client: clientId,
+      docType,
+      type,
+      displayName: displayName || docType,
+    });
+    await newRequest.save();
+    return res.status(201).json({
+      message: "Document request created successfully",
+      request: newRequest,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
+  }
+};
+
 // Add a new endpoint to serve images
 exports.getImage = async (req, res) => {
   try {
@@ -272,5 +320,92 @@ exports.getImage = async (req, res) => {
     downloadStream.pipe(res);
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getActivity = async (req, res) => {
+  try {
+    const activities = await Activity.find();
+
+    return res.status(200).json(activities);
+  } catch (error) {
+    console.error("Error fetching activity:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.deleteActivity = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    await Activity.findByIdAndDelete(activityId);
+    return res.status(200).json({ message: "Activity deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting activity:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+exports.updateActivityStatus = async (req, res) => {
+  try {
+    const { activityId } = req.params;
+    const { status } = req.body;
+    const activity = await Activity.findById(activityId);
+    if (!activity) {
+      return res.status(404).json({ error: "Activity not found" });
+    }
+    activity.activity_status = status; // Update the status field
+    await activity.save(); // Save the updated activity
+    return res
+      .status(200)
+      .json({ message: "Activity status updated successfully" });
+  } catch (error) {
+    console.error("Error updating activity status:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.createActivity = async (activityData) => {
+  const { type } = activityData;
+
+  const submissionData = {};
+
+  if (!type) {
+    console.error("Activity type is required");
+    return;
+  }
+  if (
+    type !== "Reward_Claimed" &&
+    type !== "Updated_Files" &&
+    type !== "New_Client"
+  ) {
+    console.error("Invalid activity type:", type);
+    return;
+  }
+
+  submissionData.type = type;
+
+  if (type === "Reward_Claimed") {
+    submissionData.realtor_who_claimed = activityData.realtor_who_claimed;
+    submissionData.realtorName_who_claimed =
+      activityData.realtorName_who_claimed;
+    submissionData.reward_claimed_for = activityData.reward_claimed_for;
+    submissionData.reward = activityData.reward;
+    submissionData.rewardName = activityData.rewardName;
+  } else if (type === "Updated_Files") {
+    submissionData.client = activityData.client;
+    submissionData.document_submitted = activityData.document_submitted;
+    submissionData.clientName = activityData.clientName;
+  } else if (type === "New_Client") {
+    submissionData.client = activityData.client;
+    submissionData.clientName = activityData.clientName;
+  } else {
+    console.error("Invalid activity type:", type);
+    return;
+  }
+
+  try {
+    const activity = new Activity(submissionData);
+    await activity.save();
+  } catch (error) {
+    console.error("Error creating activity:", error);
   }
 };

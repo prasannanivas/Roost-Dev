@@ -214,3 +214,112 @@
 .modal-actions button:hover {
   opacity: 0.9;
 }
+
+/* Claimed Table Styling */
+.claimed-table {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.claimed-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  color: #333;
+}
+
+.claimed-table th {
+  text-align: left;
+  padding: 12px;
+  background-color: #f9f9f9;
+  font-weight: bold;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.claimed-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.status-badge.pending {
+  background-color: #35635e;
+  color: white;
+}
+
+.status-badge.processing {
+  background-color: #f4a261;
+  color: white;
+}
+
+.status-badge.sent {
+  background-color: #e0e0e0;
+  color: #555;
+}
+
+/* Status Modal Styling */
+.status-modal .address-fields,
+.status-modal .tracking-field {
+  margin: 15px 0;
+}
+
+.status-modal .address-fields input,
+.status-modal .tracking-field input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.status-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.status-modal .save-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.send-to-client {
+  background-color: #f5f5f5;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.sent-details {
+  margin: 15px 0;
+}
+
+.details-group {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.details-group h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.details-group p {
+  margin: 5px 0;
+}

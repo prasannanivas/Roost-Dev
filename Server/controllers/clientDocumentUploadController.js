@@ -4,6 +4,7 @@ const fs = require("fs");
 const ClientUser = require("../models/ClientUser");
 const { getGridFsBucket } = require("../config/gridfs");
 const DocumentRequest = require("../models/schemas/DocumentRequest");
+const { createActivity } = require("./adminController");
 
 // We'll assume Multer is storing the file in memory or on disk,
 // but here we only need a readable stream to pipe into GridFS.
@@ -129,6 +130,17 @@ exports.uploadClientDocument = async (req, res) => {
         fs.unlink(tempFilePath, (err) => {
           if (err) console.warn("Temp file remove error:", err);
         });
+
+        try {
+          await createActivity({
+            type: "Updated_Files",
+            client: clientId,
+            clientName: client.name,
+            document_submitted: docType,
+          });
+        } catch (error) {
+          console.error("Error creating activity:", error);
+        }
 
         // 8) Send success response
         return res.status(200).json({

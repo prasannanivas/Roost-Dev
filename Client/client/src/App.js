@@ -10,6 +10,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ClientProvider } from "./context/ClientContext";
 import ClientDetails from "./components/ClientDetails";
 import { RealtorProvider } from "./context/RealtorContext";
+import RewardClaimDetails from "./components/RewardClaimDetails";
 
 function App() {
   return (
@@ -29,6 +30,22 @@ function App() {
                 <RealtorProvider>
                   <ClientDetails />
                 </RealtorProvider>
+              }
+            />
+            <Route
+              path="/clients/:id"
+              element={
+                <ClientProvider>
+                  <ClientDetails />
+                </ClientProvider>
+              }
+            />
+            <Route
+              path="/rewards/claimed/:rewardId"
+              element={
+                <ClientProvider>
+                  <RewardClaimDetails />
+                </ClientProvider>
               }
             />
           </Routes>

@@ -1,0 +1,159 @@
+.activity-container {
+  padding: 24px;
+  background-color: #f5f7fa;
+  font-family: 'Segoe UI', sans-serif;
+  width: 80%;
+  height: 90vh;
+  overflow-y: scroll;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.activity-header select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  font-weight: 500;
+}
+
+/* Chart styling */
+.chart-wrapper {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  border: 1px solid #ddd;
+  height: 300px;
+}
+
+.activity-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.updated-box,
+.claimed-box {
+  background: white;
+  border-radius: 10px;
+  flex: 1;
+  padding: 16px;
+  font-weight: bold;
+  font-size: 20px;
+  text-align: center;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+}
+
+.updated-box span,
+.claimed-box span {
+  display: block;
+  font-size: 28px;
+  margin-top: 8px;
+  color: #2f4f4f;
+}
+
+/* Main content layout */
+.activity-columns {
+  display: flex;
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.activity-log,
+.claimed-log {
+  background-color: #f5f1f1;
+  flex: 1;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.activity-log h4 {
+  font-size: 16px;
+  margin: 16px 0;
+}
+
+.activity-box {
+  display: flex;
+  gap: 12px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.activity-box .initials {
+  background: #777;
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.activity-box .client-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.activity-box .detail {
+  font-size: 13px;
+  color: #555;
+}
+
+.claimed-box-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.claimed-box-item .client-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.claimed-box-item .for-label {
+  font-size: 12px;
+  color: #777;
+  margin-top: 4px;
+}
+
+.claimed-box-item .item {
+  font-weight: 500;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.pagination button {
+  padding: 4px 12px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pagination .active {
+  background-color: #2f4f4f;
+  color: white;
+  font-weight: bold;
+}

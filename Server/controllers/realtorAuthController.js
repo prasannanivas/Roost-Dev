@@ -10,6 +10,7 @@ const { getGridFsBucket } = require("../config/gridfs.js"); // Adjust the path a
 const jwt = require("jsonwebtoken");
 const DocumentRequest = require("../models/schemas/DocumentRequest.js");
 const { RewardsClaims, Reward } = require("../models/Reward");
+const { createActivity } = require("./adminController.js");
 
 // 1. Realtor Signup
 exports.realtorSignup = async (req, res) => {
@@ -554,6 +555,8 @@ exports.claimRewards = async (req, res) => {
 
     const realtor = await RealtorUser.findById(realtorId);
     const reward = await Reward.findById(rewardId);
+    claimData.realtorName = realtor.name;
+    claimData.rewardName = reward.rewardName;
 
     if (!realtor) {
       return res.status(404).json({ error: "Realtor not found" });
@@ -562,10 +565,15 @@ exports.claimRewards = async (req, res) => {
       return res.status(404).json({ error: "Reward not found" });
     }
 
-    if (realtor.points * 3.14 < reward.rewardAmount) {
+    if (realtor.points < reward.rewardAmount / 3.14) {
+      console.log(
+        `Realtor has only ${realtor.points} Points/s but this required ${
+          reward.rewardAmount / 3.14
+        } Point/s`
+      );
       return res.status(400).json({
         message: `Realtor has only ${
-          realtor.points * 3.14
+          realtor.points
         } Amount/s but this required ${reward.rewardAmount / 3.14} Amount/s`,
         error: "Not enough points to claim this reward",
       });
@@ -586,21 +594,57 @@ exports.claimRewards = async (req, res) => {
       claimData.targetRealtorId = targetRealtorId;
     }
 
+    let newClaim;
     try {
-      const newClaim = new RewardsClaims(claimData);
-      await newClaim.save();
-      reward.rewardClaimed += 1; // Increment the claimed count
-      await reward.save();
-    } catch (saveError) {
-      throw new Error("Failed to save claim or update reward");
-    }
+      newClaim = await RewardsClaims.create(claimData);
+      console.log(newClaim);
 
-    res.status(200).json({
-      message: "Rewards claimed successfully",
-      claim: newClaim,
-    });
+      // Deduct points from realtor
+      const pointsToDeduct = Math.ceil(reward.rewardAmount / 3.14);
+      realtor.points -= pointsToDeduct;
+      realtor.pointsHistory.push({
+        points: -pointsToDeduct,
+        reason: `Claimed reward: ${reward.rewardName || reward._id}`,
+      });
+      await realtor.save();
+
+      reward.rewardClaimed += 1;
+      await reward.save();
+
+      try {
+        // Create activity log for the claim
+        const activity = {
+          type: "Reward_Claimed",
+          reward: reward._id,
+          rewardName: reward.rewardName,
+          realtor_who_claimed: realtor._id,
+          realtorName_who_claimed: realtor.name,
+          reward_claimed_for: to,
+          client: clientId || targetRealtorId,
+        };
+
+        await createActivity(activity);
+      } catch (error) {
+        console.error("Error saving activity:", error);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Rewards claimed successfully",
+        claim: newClaim,
+        pointsDeducted: pointsToDeduct,
+        remainingPoints: realtor.points,
+      });
+    } catch (saveError) {
+      // If there was an error saving, try to rollback any changes
+      if (newClaim?._id) {
+        await RewardsClaims.findByIdAndDelete(newClaim._id);
+      }
+      throw saveError;
+    }
   } catch (error) {
-    res.status(500).json({
+    console.error("Error in claimRewards:", error);
+    return res.status(500).json({
       message: "Error claiming reward",
       error: error.message,
     });

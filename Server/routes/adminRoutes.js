@@ -12,6 +12,10 @@ const {
   toggleRewardVisibility,
   getImage,
   getAllClients,
+  updateClaimedRewards,
+  requestDocument,
+  getActivity,
+  updateActivityStatus,
 } = require("../controllers/adminController");
 
 // GET /admin/documents/pending
@@ -32,6 +36,14 @@ router.delete("/rewards/:rewardId", deleteReward);
 
 router.get("/rewards/claimed", getClaimedRewards);
 
+router.patch("/rewards/claimed/:rewardId", updateClaimedRewards);
+
 router.get("/api/images/:fileId", getImage);
+
+router.post("/requestdocument", requestDocument);
+
+router.get("/activity", getActivity);
+
+router.put("/activity/:activityId", updateActivityStatus);
 
 module.exports = router;
